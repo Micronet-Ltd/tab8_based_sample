@@ -1,0 +1,487 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/frameLayout"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@android:color/background_light"
+  tools:context=".fragments.InputsOutputsLedsFragment">
+
+
+  <LinearLayout
+    android:id="@+id/allPorts"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="horizontal"
+    android:weightSum="2">
+
+
+    <LinearLayout
+      android:id="@+id/rs232andJ1708"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_weight="1"
+      android:orientation="vertical"
+      android:weightSum="6">
+
+      <LinearLayout
+        android:id="@+id/RS232"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:background="@drawable/border"
+        android:orientation="vertical">
+
+        <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center"
+          android:layout_marginTop="5dp"
+          android:text="RS232"
+          android:textColor="@color/colorPrimaryDark"
+          android:textStyle="bold"
+          android:textSize="15sp"
+          />
+
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal">
+
+          <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:text="select port:"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="13sp"
+            />
+
+          <Spinner
+            android:id="@+id/SerialPortListRS232"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            />
+
+        </LinearLayout>
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal">
+          <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:text="select baudrate:"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="13sp"
+            />
+
+          <Spinner
+            android:id="@+id/baudrateListRS232"
+            android:layout_width="124dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal">
+
+          <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="20dp"
+            android:text="enter data:"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="13sp"
+            />
+          <EditText
+            android:id="@+id/customDataRS232"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:layout_marginTop="5dp"
+            android:textSize="13sp"
+            android:maxLines="1"
+            android:inputType="text"
+            android:imeOptions="actionDone"
+            />
+
+          <Button
+            android:id="@+id/sendDataRS232"
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:text="Send"
+            android:textSize="13sp"
+            android:textAllCaps="false"/>
+        </LinearLayout>
+
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal">
+          <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="20dp"
+            android:text="received data:"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="13sp"
+            />
+
+          <TextView
+            android:id="@+id/receivedDataRS232"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="10dp"
+            android:maxLines="2"
+            android:text=""
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="13sp"/>
+
+          <Button
+            android:id="@+id/clearDataRS232"
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="10dp"
+            android:text="Clear"
+            android:textSize="13sp"
+            android:textAllCaps="false"/>
+        </LinearLayout>
+
+
+      </LinearLayout>
+
+      <LinearLayout
+        android:id="@+id/J1708"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="4"
+        android:background="@drawable/border"
+        android:orientation="vertical">
+
+        <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center"
+          android:layout_marginTop="5dp"
+          android:text="J1708"
+          android:textColor="@color/colorPrimaryDark"
+          android:textStyle="bold"
+          android:textSize="15sp"
+          />
+
+        <RadioGroup
+          android:id="@+id/jGroup"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_centerHorizontal="true"
+          android:orientation="horizontal">
+
+          <RadioButton
+            android:id="@+id/j1708En"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Enable \nJ1708"
+            android:textSize="10sp"/>
+
+          <RadioButton
+            android:id="@+id/j1708Dis"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Disable \nJ1708"
+            android:textSize="10sp"/>
+
+        </RadioGroup>
+
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal">
+
+          <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="20dp"
+            android:text="enter data:"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="13sp"
+            />
+          <EditText
+            android:id="@+id/customDataJ1708"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:layout_marginTop="5dp"
+            android:textSize="13sp"
+            android:maxLines="1"
+            android:inputType="text"
+            android:imeOptions="actionDone"
+            />
+
+          <Button
+            android:id="@+id/sendDataJ1708"
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:text="Send"
+            android:textSize="13sp"
+            android:textAllCaps="false"/>
+        </LinearLayout>
+
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal">
+          <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="20dp"
+            android:text="received data:"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="13sp"
+            />
+
+          <TextView
+            android:id="@+id/receivedDataJ1708"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="10dp"
+            android:maxLines="2"
+            android:text=""
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="13sp"/>
+
+          <Button
+            android:id="@+id/clearDataJ1708"
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="10dp"
+            android:text="Clear"
+            android:textSize="13sp"
+            android:textAllCaps="false"/>
+        </LinearLayout>
+
+
+      </LinearLayout>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+      android:id="@+id/rs485andCanbus"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_weight="1"
+      android:orientation="vertical"
+      android:weightSum="6">
+
+      <LinearLayout
+        android:id="@+id/RS485"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        android:background="@drawable/border"
+        android:orientation="vertical">
+
+        <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_gravity="center"
+          android:layout_marginTop="5dp"
+          android:text="RS485"
+          android:textColor="@color/colorPrimaryDark"
+          android:textStyle="bold"
+          android:textSize="15sp"
+          />
+
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal">
+
+          <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:text="select port:"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="13sp"
+            />
+
+          <Spinner
+            android:id="@+id/SerialPortListRS485"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"
+            />
+
+        </LinearLayout>
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal">
+          <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:text="select baudrate:"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="13sp"
+            />
+
+          <Spinner
+            android:id="@+id/baudrateListRS485"
+            android:layout_width="124dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal">
+
+          <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="20dp"
+            android:text="enter data:"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="13sp"
+            />
+          <EditText
+            android:id="@+id/customDataRS485"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="5dp"
+            android:layout_marginTop="5dp"
+            android:textSize="13sp"
+            android:maxLines="1"
+            android:inputType="text"
+            android:imeOptions="actionDone"
+            />
+
+          <Button
+            android:id="@+id/sendDataRS485"
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:text="Send"
+            android:textSize="13sp"
+            android:textAllCaps="false"/>
+        </LinearLayout>
+
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal">
+          <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginLeft="20dp"
+            android:text="received data:"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="13sp"
+            />
+
+          <TextView
+            android:id="@+id/receivedDataRS485"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="5dp"
+            android:layout_marginTop="10dp"
+            android:maxLines="2"
+            android:text=""
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="13sp"/>
+
+          <Button
+            android:id="@+id/clearDataRS485"
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:layout_marginTop="10dp"
+            android:text="Clear"
+            android:textSize="13sp"
+            android:textAllCaps="false"/>
+        </LinearLayout>
+
+
+      </LinearLayout>
+
+      <LinearLayout
+        android:id="@+id/Canbus"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="4"
+        android:background="@drawable/border"
+        android:orientation="vertical">
+
+
+      </LinearLayout>
+
+    </LinearLayout>
+
+  </LinearLayout>
+
+  <RadioGroup
+    android:id="@+id/rsGroup"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_centerHorizontal="true"
+    android:orientation="horizontal">
+
+    <RadioButton
+      android:id="@+id/rs232En"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:checked="true"
+      android:text="Enable \nRS232"
+      android:textSize="10sp"/>
+
+    <RadioButton
+      android:id="@+id/rs485"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:text="Enable \nRS485"
+      android:textSize="10sp"/>
+
+  </RadioGroup>
+
+    <TextView
+      android:id="@+id/disabled"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:text="Not Avaliable (device not in cradle)"
+      android:layout_gravity="center"
+      android:layout_centerHorizontal="true"
+      android:layout_marginTop="150dp"
+      android:layout_marginStart="400dp"/>
+
+
+
+</RelativeLayout>
