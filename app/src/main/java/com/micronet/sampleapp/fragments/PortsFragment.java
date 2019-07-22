@@ -1,4 +1,4 @@
-package com.micronet.smarttabsmarthubsampleapp.fragments;
+package com.micronet.sampleapp.fragments;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -28,9 +28,9 @@ import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.micronet.smarttabsmarthubsampleapp.R;
-import com.micronet.smarttabsmarthubsampleapp.SerialPort;
-import com.micronet.smarttabsmarthubsampleapp.activities.MainActivity;
+import com.micronet.sampleapp.R;
+import com.micronet.sampleapp.SerialPort;
+import com.micronet.sampleapp.activities.MainActivity;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -67,7 +67,7 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
     int dockState = -1;
     public static MainActivity mainActivity;
 
-    String[] RSPortList = {"/dev/ttyUSB0",  "/dev/ttyUSB1","/dev/ttyUSB2",  "/dev/ttyUSB3"};
+    String[] RSPortList = {"/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyUSB2", "/dev/ttyUSB3"};
     String[] RSPortListBasicCradle = {"/dev/ttyHS0"}; //todo add basic cradle case
     String[] baudrateList = {"300", "600", "1200", "1800", "2400", "4800", "9600", "19200", "38400", "57600", "115200"};
     String j1708Port = "/dev/ttyMICRONET_J1708";
@@ -302,7 +302,6 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
                     Toast.makeText(getContext(), "Enter data!", Toast.LENGTH_LONG).show();
                 } else {
                     send = customDataJ1708.getText().toString().getBytes();
-                    Log.d("AAAAA", "sending data: " + customDataJ1708.getText().toString());
                     sendDataJ1708(send);
                 }
                 break;
@@ -482,12 +481,9 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
     }
 
     public void sendDataJ1708(byte[] data) {
-        Log.d("AAAAA", "mSerialPortJ1708 " + (mSerialPortJ1708 != null ? "not null"
-            : "are null" + "mOutputStreamj1708 " + (mOutputStreamj1708 != null ? "not null" : "are null")));
         if (mSerialPortJ1708 != null) {
             if (mOutputStreamj1708 != null) {
                 try {
-                    Log.d("AAAAA", "write data");
                     mOutputStreamj1708.write(data);
                 } catch (IOException e) {
                     e.printStackTrace();

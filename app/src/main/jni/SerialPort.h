@@ -12,7 +12,7 @@ extern "C" {
  * Method:    open
  * Signature: (Ljava/lang/String;I)Ljava/io/FileDescriptor;
  */
-JNIEXPORT jobject JNICALL Java_com_micronet_smarttabsmarthubsampleapp_SerialPort_open
+JNIEXPORT jobject JNICALL Java_com_micronet_sampleapp_SerialPort_open
         (JNIEnv *, jclass, jstring, jint);
 
 /*
@@ -20,7 +20,7 @@ JNIEXPORT jobject JNICALL Java_com_micronet_smarttabsmarthubsampleapp_SerialPort
  * Method:    config
  * Signature: (I)V
  */
-JNIEXPORT void JNICALL Java_com_micronet_smarttabsmarthubsampleapp_SerialPort_config
+JNIEXPORT void JNICALL Java_com_micronet_sampleapp_SerialPort_config
     (JNIEnv *, jobject,jint);
 
 /*
@@ -28,7 +28,7 @@ JNIEXPORT void JNICALL Java_com_micronet_smarttabsmarthubsampleapp_SerialPort_co
  * Method:    close
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_com_micronet_smarttabsmarthubsampleapp_SerialPort_close
+JNIEXPORT void JNICALL Java_com_micronet_sampleapp_SerialPort_close
         (JNIEnv *, jobject);
 
 #ifdef __cplusplus

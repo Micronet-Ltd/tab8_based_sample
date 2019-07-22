@@ -3,7 +3,7 @@
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
-package com.micronet.smarttabsmarthubsampleapp.activities;
+package com.micronet.sampleapp.activities;
 
 import android.content.Context;
 import android.content.Intent;
@@ -20,13 +20,11 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
-import android.view.WindowManager;
-import com.micronet.smarttabsmarthubsampleapp.R;
-import com.micronet.smarttabsmarthubsampleapp.fragments.AboutFragment;
-import com.micronet.smarttabsmarthubsampleapp.fragments.CanbusFragment;
-import com.micronet.smarttabsmarthubsampleapp.fragments.InputsOutputsLedsFragment;
-import com.micronet.smarttabsmarthubsampleapp.fragments.PortsFragment;
-import com.micronet.smarttabsmarthubsampleapp.receivers.DeviceStateReceiver;
+import com.micronet.sampleapp.R;
+import com.micronet.sampleapp.fragments.AboutFragment;
+import com.micronet.sampleapp.fragments.CanbusFragment;
+import com.micronet.sampleapp.fragments.InputsOutputsLedsFragment;
+import com.micronet.sampleapp.fragments.PortsFragment;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,7 +37,6 @@ public class MainActivity extends AppCompatActivity {
     private static boolean portsAttached = false;
     private static int dockState = -1;
 
-    private DeviceStateReceiver deviceStateReceiver = new DeviceStateReceiver();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,22 +64,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-        // Receive any dock events or usb events
-        IntentFilter filters = new IntentFilter();
-        filters.addAction(Intent.ACTION_DOCK_EVENT);
-        filters.addAction(UsbManager.ACTION_USB_DEVICE_ATTACHED);
-        filters.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED);
-        registerReceiver(deviceStateReceiver, filters);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-
-        // Unregister receiver
-        unregisterReceiver(deviceStateReceiver);
-    }
+        }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
@@ -90,31 +77,15 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "Configuration changed: " + newConfig.toString());
     }
 
-    @SuppressWarnings("unused")
-    public static synchronized boolean areTtyPortsAvailable() {
-        return portsAttached;
-    }
-
-    public static synchronized void setTtyPortsState(boolean state) {
-        portsAttached = state;
-    }
 
     public static synchronized int getDockState() {
         return dockState;
     }
 
-    public static synchronized void setDockState(int state) {
-        dockState = state;
-    }
 
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        //adapter.addFragment(new InputOutputsFragment(), "GPIOs");
         adapter.addFragment(new InputsOutputsLedsFragment(), "io+leds");
-       // adapter.addFragment(new Can1OverviewFragment(), "Can1");
-      //  adapter.addFragment(new Can2OverviewFragment(), "Can2");
-      //  adapter.addFragment(new CanBusFramesFragment(), "CanFrames");
-        //adapter.addFragment(new J1708Fragment(), "J1708");
         adapter.addFragment(new AboutFragment(), "Info");
         adapter.addFragment(new PortsFragment(), "Ports");
         adapter.addFragment(new CanbusFragment(), "Canbus");

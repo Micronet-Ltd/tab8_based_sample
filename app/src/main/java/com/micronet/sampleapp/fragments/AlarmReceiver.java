@@ -1,4 +1,4 @@
-package com.micronet.smarttabsmarthubsampleapp.fragments;
+package com.micronet.sampleapp.fragments;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

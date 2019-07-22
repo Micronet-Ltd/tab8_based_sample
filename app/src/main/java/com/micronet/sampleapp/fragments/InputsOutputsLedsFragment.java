@@ -3,7 +3,7 @@
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
-package com.micronet.smarttabsmarthubsampleapp.fragments;
+package com.micronet.sampleapp.fragments;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -22,8 +22,8 @@ import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Switch;
 import android.widget.TextView;
-import com.micronet.smarttabsmarthubsampleapp.R;
-import com.micronet.smarttabsmarthubsampleapp.activities.MainActivity;
+import com.micronet.sampleapp.R;
+import com.micronet.sampleapp.activities.MainActivity;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -127,6 +127,7 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
         getActivity().unregisterReceiver(mReceiver);
         super.onDestroy();
     }
+
     @Override
     public void onPause() {
         super.onPause();
@@ -152,11 +153,11 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
             case Intent.EXTRA_DOCK_STATE_DESK:
             case Intent.EXTRA_DOCK_STATE_LE_DESK:
             case Intent.EXTRA_DOCK_STATE_HE_DESK:
-                cradleStateMsg = getString(R.string.in_cradle_state_text) + "(" + cradleType(cradleType) +  ")";
+                cradleStateMsg = getString(R.string.in_cradle_state_text) + "(" + cradleType(cradleType) + ")";
                 ignitionStateMsg = getString(R.string.ignition_off_state_text);
                 break;
             case Intent.EXTRA_DOCK_STATE_CAR:
-                cradleStateMsg = getString(R.string.in_cradle_state_text) + "(" + cradleType(cradleType) +  ")";
+                cradleStateMsg = getString(R.string.in_cradle_state_text) + "(" + cradleType(cradleType) + ")";
                 ignitionStateMsg = getString(R.string.ignition_on_state_text);
                 break;
             default:
@@ -266,9 +267,8 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
     };
 
     /**
-    * Receive input number
-     * return input value
-    */
+     * Receive input number return input value
+     */
     public int getInput(int inputNumber) {
         int inputValue = -1;
         try {
@@ -443,11 +443,10 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
         input7.setText(((getInput(7) == 0) ? "OFF (" : "ON (") + getInput(7) + ")");
     }
 
-    private String cradleType (int dockValue){
+    private String cradleType(int dockValue) {
         String res = "Basic";
         String temp = Integer.toBinaryString(dockValue);
-        Log.d("AAAA", "binary string: " + temp + "; length: " + temp.length());
-        if ((temp.length()>=3) && (temp.charAt(temp.length()-3) == '1')){
+        if ((temp.length() >= 3) && (temp.charAt(temp.length() - 3) == '1')) {
             res = "Smart";
         }
         return res;

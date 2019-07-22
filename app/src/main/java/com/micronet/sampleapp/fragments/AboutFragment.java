@@ -3,7 +3,7 @@
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
-package com.micronet.smarttabsmarthubsampleapp.fragments;
+package com.micronet.sampleapp.fragments;
 
 import android.annotation.SuppressLint;
 import android.app.AlarmManager;
@@ -28,10 +28,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import android.widget.Toast;
-import com.micronet.smarttabsmarthubsampleapp.BuildConfig;
-import com.micronet.smarttabsmarthubsampleapp.R;
+import com.micronet.sampleapp.BuildConfig;
+import com.micronet.sampleapp.R;
 
-import com.micronet.smarttabsmarthubsampleapp.receivers.DeviceStateReceiver;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -47,7 +46,7 @@ public class AboutFragment extends Fragment implements OnClickListener {
     EditText waitTime;
     Button setAlarm;
     String waitingTimeInMinutes = "0";
-    public static final int REQUEST_CODE=101;
+    public static final int REQUEST_CODE = 101;
 
 
     public AboutFragment() {
@@ -65,7 +64,7 @@ public class AboutFragment extends Fragment implements OnClickListener {
         rootView = inflater.inflate(R.layout.fragment_about, container, false);
         TextView txtAbout = rootView.findViewById(R.id.txtAppInfo);
         txtAbout.setText(String.format("Tab8 Sample App v %s\n" +
-                "Copyright © 2018 Micronet Inc.\n", BuildConfig.VERSION_NAME));
+            "Copyright © 2018 Micronet Inc.\n", BuildConfig.VERSION_NAME));
 
         updateInfoText();
         waitTime = rootView.findViewById(R.id.waitingTime);
@@ -77,45 +76,13 @@ public class AboutFragment extends Fragment implements OnClickListener {
     @Override
     public void onResume() {
         super.onResume();
-
-        Context context = getContext();
-        if (context != null) {
-            LocalBroadcastManager.getInstance(context).registerReceiver(broadcastReceiver, DeviceStateReceiver.getLocalIntentFilter());
-        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-
-        Context context = getContext();
-        if (context != null) {
-            LocalBroadcastManager.getInstance(context).unregisterReceiver(broadcastReceiver);
-        }
     }
 
-    private final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            goAsync();
-
-            String action = intent.getAction();
-
-            if (action != null) {
-                switch (action) {
-                    case DeviceStateReceiver.portsAttachedAction:
-                        Handler handler = new Handler();
-                        handler.postDelayed(updateTextRunnable, 2000);
-                        Log.d(TAG, "Ports attached event received");
-                        break;
-                    case DeviceStateReceiver.portsDetachedAction:
-                        updateInfoText();
-                        Log.d(TAG, "Ports detached event received");
-                        break;
-                }
-            }
-        }
-    };
 
     Runnable updateTextRunnable = new Runnable() {
         @Override
@@ -127,17 +94,18 @@ public class AboutFragment extends Fragment implements OnClickListener {
     @SuppressLint("HardwareIds")
     public void updateInfoText() {
 
-        String mcuVersion = ((getSystemProperty(PROP_MCU_VERSION).equalsIgnoreCase("Unknown"))? "Unknown":getSystemProperty(PROP_MCU_VERSION));
-        String fpgaVersion = ((getSystemProperty(PROP_FPGA_VERSION).equalsIgnoreCase("Unknown"))? "Unknown":getFPGAVersion(getSystemProperty(PROP_FPGA_VERSION)));
-            TextView txtDeviceInfo = rootView.findViewById(R.id.txtDeviceInfo);
-            txtDeviceInfo.setText(String.format("OS Version: %s \n" +
-                            "MCU Version: %s\n" +
-                            "FPGA Version: %s\n" +
-                            "Android Build Version: %s\n" +
-                            "Device Model: %s\n" +
-                            "Serial: %s\n",
-                    Build.DISPLAY, mcuVersion, fpgaVersion, Build.VERSION.RELEASE, Build.MODEL,
-                    Build.SERIAL));
+        String mcuVersion = ((getSystemProperty(PROP_MCU_VERSION).equalsIgnoreCase("Unknown")) ? "Unknown" : getSystemProperty(PROP_MCU_VERSION));
+        String fpgaVersion = ((getSystemProperty(PROP_FPGA_VERSION).equalsIgnoreCase("Unknown")) ? "Unknown"
+            : getFPGAVersion(getSystemProperty(PROP_FPGA_VERSION)));
+        TextView txtDeviceInfo = rootView.findViewById(R.id.txtDeviceInfo);
+        txtDeviceInfo.setText(String.format("OS Version: %s \n" +
+                "MCU Version: %s\n" +
+                "FPGA Version: %s\n" +
+                "Android Build Version: %s\n" +
+                "Device Model: %s\n" +
+                "Serial: %s\n",
+            Build.DISPLAY, mcuVersion, fpgaVersion, Build.VERSION.RELEASE, Build.MODEL,
+            Build.SERIAL));
     }
 
     private static String getSystemProperty(String propertyName) {
@@ -154,18 +122,18 @@ public class AboutFragment extends Fragment implements OnClickListener {
         return propertyValue;
     }
 
-    private static String getFPGAVersion(String hex){
+    private static String getFPGAVersion(String hex) {
         String s = "";
         s = s + (char) Integer.parseInt(hex.substring(0, 2), 16) + ".";
         for (int i = 2; i < hex.length(); i += 2) {
             String str = hex.substring(i, i + 2);
             s = s + Integer.parseInt(str, 16) + ".";
         }
-        return s.substring(0, s.length()-1);
+        return s.substring(0, s.length() - 1);
     }
 
     /**
-     Get actual ROM (storage)
+     * Get actual ROM (storage)
      */
     private String getRom() {
         int rom = 0;
@@ -191,15 +159,15 @@ public class AboutFragment extends Fragment implements OnClickListener {
 
     @Override
     public void onClick(View v) {
-        if (v.getId() == R.id.setAlarm){
+        if (v.getId() == R.id.setAlarm) {
             Log.d(TAG, "Set Alarm");
             if (TextUtils.isEmpty(waitTime.getText().toString())) {
                 Toast.makeText(getContext(), "Enter number of minutes", Toast.LENGTH_LONG).show();
             } else {
                 waitingTimeInMinutes = waitTime.getText().toString();
                 long waitMillisec = Integer.parseInt(waitingTimeInMinutes) * 60 * 1000;
-                AlarmManager alarmManager= (AlarmManager) getContext().getSystemService(getContext().ALARM_SERVICE);
-                Intent intent=new Intent(getContext(),AlarmReceiver.class);
+                AlarmManager alarmManager = (AlarmManager) getContext().getSystemService(getContext().ALARM_SERVICE);
+                Intent intent = new Intent(getContext(), AlarmReceiver.class);
                 PendingIntent pendingIntent = PendingIntent.getBroadcast(getContext(), REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
                 //alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + waitMillisec, pendingIntent);
                 alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(System.currentTimeMillis() + waitMillisec, pendingIntent), pendingIntent);

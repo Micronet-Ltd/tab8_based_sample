@@ -76,7 +76,7 @@ static speed_t getBaudrate(jint baudrate)
  * Method:    open
  * Signature: (Ljava/lang/String;I)Ljava/io/FileDescriptor;
  */
-JNIEXPORT jobject JNICALL Java_com_micronet_smarttabsmarthubsampleapp_SerialPort_open
+JNIEXPORT jobject JNICALL Java_com_micronet_sampleapp_SerialPort_open
     (JNIEnv *env, jclass thiz, jstring path, jint flags) {
 
     /* Opening device */
@@ -110,7 +110,7 @@ JNIEXPORT jobject JNICALL Java_com_micronet_smarttabsmarthubsampleapp_SerialPort
  * Method:    config
  * Signature: (I)V
  */
-JNIEXPORT void JNICALL Java_com_micronet_smarttabsmarthubsampleapp_SerialPort_config
+JNIEXPORT void JNICALL Java_com_micronet_sampleapp_SerialPort_config
     (JNIEnv *env, jclass thiz, jint baudrate) {
     speed_t speed;
     struct termios cfg;
@@ -164,7 +164,7 @@ JNIEXPORT void JNICALL Java_com_micronet_smarttabsmarthubsampleapp_SerialPort_co
  * Method:    close
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_com_micronet_smarttabsmarthubsampleapp_SerialPort_close
+JNIEXPORT void JNICALL Java_com_micronet_sampleapp_SerialPort_close
         (JNIEnv *env, jobject thiz)
 {
     jclass SerialPortClass = (*env)->GetObjectClass(env, thiz);

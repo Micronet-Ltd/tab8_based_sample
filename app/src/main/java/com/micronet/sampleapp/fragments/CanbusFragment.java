@@ -3,7 +3,7 @@
  * file 'LICENSE.txt', which is part of this source code package.
  */
 
-package com.micronet.smarttabsmarthubsampleapp.fragments;
+package com.micronet.sampleapp.fragments;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -31,9 +31,9 @@ import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.micronet.smarttabsmarthubsampleapp.R;
-import com.micronet.smarttabsmarthubsampleapp.SerialPort;
-import com.micronet.smarttabsmarthubsampleapp.activities.MainActivity;
+import com.micronet.sampleapp.R;
+import com.micronet.sampleapp.SerialPort;
+import com.micronet.sampleapp.activities.MainActivity;
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
