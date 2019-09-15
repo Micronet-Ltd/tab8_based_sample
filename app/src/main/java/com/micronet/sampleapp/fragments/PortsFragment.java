@@ -1,7 +1,8 @@
 package com.micronet.sampleapp.fragments;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
+import static java.lang.Character.isDigit;
+import static java.lang.Character.isUpperCase;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -15,34 +16,29 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnKeyListener;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.micronet.sampleapp.R;
 import com.micronet.sampleapp.SerialPort;
+import com.micronet.sampleapp.j1708Port;
 import com.micronet.sampleapp.activities.MainActivity;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.security.InvalidParameterException;
+import java.util.Arrays;
 
 public class PortsFragment extends Fragment implements OnClickListener, AdapterView.OnItemSelectedListener {
 
@@ -53,7 +49,7 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
     protected OutputStream mOutputStream;
     protected InputStream mInputStream;
     protected ReadThread mReadThread;
-    protected SerialPort mSerialPortJ1708 = null;
+    protected j1708Port mSerialPortJ1708 = null;
     protected OutputStream mOutputStreamj1708;
     protected InputStream mInputStreamj1708;
     protected ReadThreadJ1708 mReadThreadJ1708;
@@ -63,16 +59,17 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
     String allReceivedDataJ1708 = "";
     String receivedDataValueJ1708 = null;
     boolean rs232Enabled = true;
-    boolean basicCradle = false;
     int dockState = -1;
     public static MainActivity mainActivity;
 
     String[] RSPortList = {"/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyUSB2", "/dev/ttyUSB3"};
     String[] RSPortListBasicCradle = {"/dev/ttyHS0"}; //todo add basic cradle case
     String[] baudrateList = {"300", "600", "1200", "1800", "2400", "4800", "9600", "19200", "38400", "57600", "115200"};
-    String j1708Port = "/dev/ttyMICRONET_J1708";
+    String[] actionsList = {"volume up", "turn on flash", "turn off flash"};
+//    String j1708Port = "/dev/ttyMICRONET_J1708";
+    String j1708Port = "/dev/j1708";
     int j1708Baudrate = 9600;
-    RadioGroup rsGroup;
+//    RadioGroup rsGroup;
     RadioGroup jGroup;
     Spinner serialPortRS232;
     Spinner baudrateRS232;
@@ -81,12 +78,14 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
     Button sendDataRs232;
     Button clearDataRs232;
 
-    Spinner serialPortRS485;
-    Spinner baudrateRS485;
-    EditText customDataRS485;
-    TextView receivedDataRS485;
-    Button sendDataRs485;
-    Button clearDataRs485;
+//    Spinner serialPortRS485;
+//    Spinner baudrateRS485;
+//    EditText customDataRS485;
+//    TextView receivedDataRS485;
+//    Button sendDataRs485;
+//    Button clearDataRs485;
+
+    Spinner actions;
 
     EditText customDataJ1708;
     TextView receivedDataJ1708;
@@ -95,8 +94,8 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
 
     String selectedPortRS232 = RSPortList[0];
     String selectedBaudrateRS232 = baudrateList[0];
-    String selectedPortRS485 = RSPortList[0];
-    String selectedBaudrateRS485 = baudrateList[0];
+//    String selectedPortRS485 = RSPortList[0];
+//    String selectedBaudrateRS485 = baudrateList[0];
     String selectedPort = RSPortList[0];
     String selectedBaudrate = baudrateList[0];
 
@@ -119,7 +118,7 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_ports, container, false);
         mainActivity = (MainActivity) getActivity();
-        setViewAndChildrenEnabled(rootView.findViewById(R.id.RS485), false);
+        //setViewAndChildrenEnabled(rootView.findViewById(R.id.RS485), false);
         setViewAndChildrenEnabled(rootView.findViewById(R.id.RS232), true);
         enablePort("rs", false);
         setViewAndChildrenEnabled(rootView.findViewById(R.id.J1708), true);
@@ -144,61 +143,67 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
         clearDataRs232 = rootView.findViewById(R.id.clearDataRS232);
         clearDataRs232.setOnClickListener(this);
 
-        // settings for RS485
-        serialPortRS485 = rootView.findViewById(R.id.SerialPortListRS485);
-        serialPortRS485.setOnItemSelectedListener(this);
-        ArrayAdapter serialPortAdapterRS485 = new ArrayAdapter(getActivity(), R.layout.spinner_item, RSPortList);
-        serialPortRS485.setAdapter(serialPortAdapterRS485);
+        // settings for custom button Action
+        actions = rootView.findViewById(R.id.customButtonActions);
+        actions.setOnItemSelectedListener(this);
+        ArrayAdapter actionsAdapter = new ArrayAdapter(getActivity(), R.layout.spinner_item, actionsList);
+        actions.setAdapter(actionsAdapter);
 
-        baudrateRS485 = rootView.findViewById(R.id.baudrateListRS485);
-        baudrateRS485.setOnItemSelectedListener(this);
-        ArrayAdapter baudrateAdapterRS485 = new ArrayAdapter(getActivity(), R.layout.spinner_item, baudrateList);
-        baudrateRS485.setAdapter(baudrateAdapterRS485);
+//        // settings for RS485
+//        serialPortRS485 = rootView.findViewById(R.id.SerialPortListRS485);
+//        serialPortRS485.setOnItemSelectedListener(this);
+//        ArrayAdapter serialPortAdapterRS485 = new ArrayAdapter(getActivity(), R.layout.spinner_item, RSPortList);
+//        serialPortRS485.setAdapter(serialPortAdapterRS485);
+//
+//        baudrateRS485 = rootView.findViewById(R.id.baudrateListRS485);
+//        baudrateRS485.setOnItemSelectedListener(this);
+//        ArrayAdapter baudrateAdapterRS485 = new ArrayAdapter(getActivity(), R.layout.spinner_item, baudrateList);
+//        baudrateRS485.setAdapter(baudrateAdapterRS485);
+//
+//        customDataRS485 = rootView.findViewById(R.id.customDataRS485);
+//        sendDataRs485 = rootView.findViewById(R.id.sendDataRS485);
+//        sendDataRs485.setOnClickListener(this);
+//
+//        receivedDataRS485 = rootView.findViewById(R.id.receivedDataRS485);
+//        clearDataRs485 = rootView.findViewById(R.id.clearDataRS485);
+//        clearDataRs485.setOnClickListener(this);
 
-        customDataRS485 = rootView.findViewById(R.id.customDataRS485);
-        sendDataRs485 = rootView.findViewById(R.id.sendDataRS485);
-        sendDataRs485.setOnClickListener(this);
-
-        receivedDataRS485 = rootView.findViewById(R.id.receivedDataRS485);
-        clearDataRs485 = rootView.findViewById(R.id.clearDataRS485);
-        clearDataRs485.setOnClickListener(this);
-
-        rsGroup = rootView.findViewById(R.id.rsGroup);
-        rsGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if (checkedId == R.id.rs232En) {
-                    clearData();
-                    closeSerialPort();
-                    rs232Enabled = true;
-                    enablePort("rs", false);
-                    setViewAndChildrenEnabled(rootView.findViewById(R.id.RS485), false);
-                    setViewAndChildrenEnabled(rootView.findViewById(R.id.RS232), true);
-                    selectedPort = selectedPortRS232;
-                    selectedBaudrate = selectedBaudrateRS232;
-                    openSerialPort(selectedPort);
-                    mSerialPort.config(Integer.parseInt(selectedBaudrate));
-                    mReadThread = new ReadThread();
-                    mReadThread.start();
-
-                } else {
-                    clearData();
-                    closeSerialPort();
-                    rs232Enabled = false;
-                    enablePort("rs", true);
-                    setViewAndChildrenEnabled(rootView.findViewById(R.id.RS485), true);
-                    setViewAndChildrenEnabled(rootView.findViewById(R.id.RS232), false);
-                    selectedPort = selectedPortRS485;
-                    selectedBaudrate = selectedBaudrateRS485;
-                    openSerialPort(selectedPort);
-                    mSerialPort.config(Integer.parseInt(selectedBaudrate));
-                    mReadThread = new ReadThread();
-                    mReadThread.start();
-
-                }
-            }
-        });
+//        rsGroup = rootView.findViewById(R.id.rsGroup);
+//        rsGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+//
+//            @Override
+//            public void onCheckedChanged(RadioGroup group, int checkedId) {
+//                if (checkedId == R.id.rs232En) {
+//                    clearData();
+//                    closeSerialPort();
+//                    rs232Enabled = true;
+//                    enablePort("rs", false);
+//                    setViewAndChildrenEnabled(rootView.findViewById(R.id.RS485), false);
+//                    setViewAndChildrenEnabled(rootView.findViewById(R.id.RS232), true);
+//                    selectedPort = selectedPortRS232;
+//                    selectedBaudrate = selectedBaudrateRS232;
+//                    openSerialPort(selectedPort);
+//                    mSerialPort.config(Integer.parseInt(selectedBaudrate));
+//                    mReadThread = new ReadThread();
+//                    mReadThread.start();
+//
+//                } else {
+//                    clearData();
+//                    closeSerialPort();
+//                    rs232Enabled = false;
+//                    enablePort("rs", true);
+//                    setViewAndChildrenEnabled(rootView.findViewById(R.id.RS485), true);
+//                    setViewAndChildrenEnabled(rootView.findViewById(R.id.RS232), false);
+//                    selectedPort = selectedPortRS485;
+//                    selectedBaudrate = selectedBaudrateRS485;
+//                    openSerialPort(selectedPort);
+//                    mSerialPort.config(Integer.parseInt(selectedBaudrate));
+//                    mReadThread = new ReadThread();
+//                    mReadThread.start();
+//
+//                }
+//            }
+//        });
 
         jGroup = rootView.findViewById(R.id.jGroup);
         jGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
@@ -236,12 +241,14 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
 
         dockState = MainActivity.getDockState();
         if (dockState == -1 || dockState == 0) {
-            rootView.findViewById(R.id.rsGroup).setVisibility(View.INVISIBLE);
-            rootView.findViewById(R.id.allPorts).setVisibility(View.INVISIBLE);
+//            rootView.findViewById(R.id.rsGroup).setVisibility(View.INVISIBLE);
+           // rootView.findViewById(R.id.allPorts).setVisibility(View.INVISIBLE);
+            rootView.findViewById(R.id.rs232andJ1708).setVisibility(View.INVISIBLE);
             rootView.findViewById(R.id.disabled).setVisibility(View.VISIBLE);
         } else {
-            rootView.findViewById(R.id.rsGroup).setVisibility(View.VISIBLE);
-            rootView.findViewById(R.id.allPorts).setVisibility(View.VISIBLE);
+//            rootView.findViewById(R.id.rsGroup).setVisibility(View.VISIBLE);
+//            rootView.findViewById(R.id.allPorts).setVisibility(View.VISIBLE);
+            rootView.findViewById(R.id.rs232andJ1708).setVisibility(View.VISIBLE);
             rootView.findViewById(R.id.disabled).setVisibility(View.INVISIBLE);
             openSerialPort(selectedPort);
             mSerialPort.config(Integer.parseInt(selectedBaudrate));
@@ -289,28 +296,28 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
                     sendData(send);
                 }
                 break;
-            case R.id.sendDataRS485:
-                if (TextUtils.isEmpty(customDataRS485.getText().toString())) {
-                    Toast.makeText(getContext(), "Enter data!", Toast.LENGTH_LONG).show();
-                } else {
-                    send = customDataRS485.getText().toString().getBytes();
-                    sendData(send);
-                }
-                break;
+//            case R.id.sendDataRS485:
+//                if (TextUtils.isEmpty(customDataRS485.getText().toString())) {
+//                    Toast.makeText(getContext(), "Enter data!", Toast.LENGTH_LONG).show();
+//                } else {
+//                    send = customDataRS485.getText().toString().getBytes();
+//                    sendData(send);
+//                }
+//                break;
             case R.id.sendDataJ1708:
                 if (TextUtils.isEmpty(customDataJ1708.getText().toString())) {
                     Toast.makeText(getContext(), "Enter data!", Toast.LENGTH_LONG).show();
                 } else {
-                    send = customDataJ1708.getText().toString().getBytes();
+                    send = mainActivity.toBinary(customDataJ1708.getText().toString());
                     sendDataJ1708(send);
                 }
                 break;
             case R.id.clearDataRS232:
                 clearData();
                 break;
-            case R.id.clearDataRS485:
-                clearData();
-                break;
+//            case R.id.clearDataRS485:
+//                clearData();
+//                break;
             case R.id.clearDataJ1708:
                 clearDataJ1708();
                 break;
@@ -337,24 +344,27 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
             if (dockState > 0) {
                 mSerialPort.config(Integer.parseInt(selectedBaudrate));
             }
-        } else if (parent.getId() == R.id.SerialPortListRS485) {
-            selectedPortRS485 = parent.getItemAtPosition(position).toString();
-            selectedPort = selectedPortRS485;
-            if (dockState > 0) {
-                if (mSerialPort != null) {
-                    closeSerialPort();
-                }
-                openSerialPort(selectedPort);
-                mSerialPort.config(Integer.parseInt(selectedBaudrate));
-                mReadThread = new ReadThread();
-                mReadThread.start();
-            }
-        } else if (parent.getId() == R.id.baudrateListRS485) {
-            selectedBaudrateRS485 = parent.getItemAtPosition(position).toString();
-            selectedBaudrate = selectedBaudrateRS485;
-            if (dockState > 0) {
-                mSerialPort.config(Integer.parseInt(selectedBaudrate));
-            }
+//        } else if (parent.getId() == R.id.SerialPortListRS485) {
+//            selectedPortRS485 = parent.getItemAtPosition(position).toString();
+//            selectedPort = selectedPortRS485;
+//            if (dockState > 0) {
+//                if (mSerialPort != null) {
+//                    closeSerialPort();
+//                }
+//                openSerialPort(selectedPort);
+//                mSerialPort.config(Integer.parseInt(selectedBaudrate));
+//                mReadThread = new ReadThread();
+//                mReadThread.start();
+//            }
+//        } else if (parent.getId() == R.id.baudrateListRS485) {
+//            selectedBaudrateRS485 = parent.getItemAtPosition(position).toString();
+//            selectedBaudrate = selectedBaudrateRS485;
+//            if (dockState > 0) {
+//                mSerialPort.config(Integer.parseInt(selectedBaudrate));
+//            }
+        }
+        else if (parent.getId() == R.id.customButtonActions){
+            mainActivity.actionId = position;
         }
     }
 
@@ -403,11 +413,62 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
             public void run() {
                 if (rs232Enabled) {
                     receivedDataRS232.setText(allReceivedData);
-                } else {
-                    receivedDataRS485.setText(allReceivedData);
+//                } else {
+//                    receivedDataRS485.setText(allReceivedData);
                 }
             }
         });
+
+    }
+
+//    public void onDataReceivedJ1708(final byte[] buffer, int size) {
+//        try {
+//            receivedDataValueJ1708 = new String(buffer, "UTF-8");
+//        } catch (UnsupportedEncodingException e) {
+//            e.printStackTrace();
+//        }
+//        allReceivedDataJ1708 = allReceivedDataJ1708 + receivedDataValueJ1708.substring(0, size);
+//
+//        if (allReceivedDataJ1708.length() < 300) {
+//            mainActivity.runOnUiThread(new Runnable() {
+//
+//                @Override
+//                public void run() {
+//                    receivedDataJ1708.setText(allReceivedDataJ1708);
+//                }
+//            });
+//        }
+//    }
+
+    public void onDataReceivedJ1708(byte[] buffer, int size) {
+       // try {
+        Log.d("AAA", Arrays.toString(buffer) + " sise = " + size);
+            receivedDataValueJ1708 = "";
+            int len = Integer.parseInt(Integer.toHexString(buffer[0] & 0xFF), 16);
+            Log.d("AAAA", "len = " + len);
+                for (int i = 1; i <= len; i++) {
+                    if (Integer.toHexString(buffer[i]).length() < 2) {
+                        receivedDataValueJ1708 = receivedDataValueJ1708 + "0" + Integer.toHexString(buffer[i]);
+                    } else {
+                        receivedDataValueJ1708 = receivedDataValueJ1708 + Integer.toHexString(buffer[i] & 0xFF);
+                    }
+                 //   Log.d("BBBBBB", "data received: " + receivedDataValueJ1708);
+                }
+
+            allReceivedDataJ1708 = allReceivedDataJ1708 + receivedDataValueJ1708;
+
+
+            mainActivity.runOnUiThread(new Runnable() {
+
+                @Override
+                public void run() {
+                    receivedDataJ1708.setText(allReceivedDataJ1708);
+                }
+            });
+
+//        } catch (UnsupportedEncodingException e) {
+//            e.printStackTrace();
+//        }
 
     }
 
@@ -436,10 +497,10 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
     public void openSerialPortJ1708() {
         try {
 
-            mSerialPortJ1708 = new SerialPort(new File(j1708Port), 0);
+            mSerialPortJ1708 = new j1708Port(new File(j1708Port), 0);
             mOutputStreamj1708 = mSerialPortJ1708.getOutputStream();
             mInputStreamj1708 = mSerialPortJ1708.getInputStream();
-            mSerialPortJ1708.config(j1708Baudrate);
+          //  mSerialPortJ1708.config(j1708Baudrate);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -498,8 +559,8 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
         allReceivedData = "";
         if (rs232Enabled) {
             receivedDataRS232.setText(allReceivedData);
-        } else {
-            receivedDataRS485.setText(allReceivedData);
+//        } else {
+//            receivedDataRS485.setText(allReceivedData);
         }
     }
 
@@ -522,19 +583,21 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
                         Log.d(TAG, "Dock event received: " + dockState);
                         if (dockState == -1 || dockState == 0) {
                             closeSerialPort();
-                            rootView.findViewById(R.id.rsGroup).setVisibility(View.INVISIBLE);
-                            rootView.findViewById(R.id.allPorts).setVisibility(View.INVISIBLE);
+//                            rootView.findViewById(R.id.rsGroup).setVisibility(View.INVISIBLE);
+                            //rootView.findViewById(R.id.allPorts).setVisibility(View.INVISIBLE);
+                            rootView.findViewById(R.id.rs232andJ1708).setVisibility(View.INVISIBLE);
                             rootView.findViewById(R.id.disabled).setVisibility(View.VISIBLE);
                         } else {
-                            rootView.findViewById(R.id.rsGroup).setVisibility(View.VISIBLE);
-                            rootView.findViewById(R.id.allPorts).setVisibility(View.VISIBLE);
+//                            rootView.findViewById(R.id.rsGroup).setVisibility(View.VISIBLE);
+                            //rootView.findViewById(R.id.allPorts).setVisibility(View.VISIBLE);
+                            rootView.findViewById(R.id.rs232andJ1708).setVisibility(View.VISIBLE);
                             rootView.findViewById(R.id.disabled).setVisibility(View.INVISIBLE);
                             if (rs232Enabled) {
                                 selectedPort = selectedPortRS232;
                                 selectedBaudrate = selectedBaudrateRS232;
-                            } else {
-                                selectedPort = selectedPortRS485;
-                                selectedBaudrate = selectedBaudrateRS485;
+//                            } else {
+//                                selectedPort = selectedPortRS485;
+//                                selectedBaudrate = selectedBaudrateRS485;
                             }
                             if (mSerialPort == null) {
                                 //todo: add set enable?
@@ -622,23 +685,25 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
         }
     }
 
-    public void onDataReceivedJ1708(final byte[] buffer, int size) {
-        try {
-            receivedDataValueJ1708 = new String(buffer, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        allReceivedDataJ1708 = allReceivedDataJ1708 + receivedDataValueJ1708.substring(0, size);
+//    public void onDataReceivedJ1708(final byte[] buffer, int size) {
+//        try {
+//            receivedDataValueJ1708 = new String(buffer, "UTF-8");
+//        } catch (UnsupportedEncodingException e) {
+//            e.printStackTrace();
+//        }
+//        allReceivedDataJ1708 = allReceivedDataJ1708 + receivedDataValueJ1708.substring(0, size);
+//
+//        if (allReceivedDataJ1708.length() < 300) {
+//            mainActivity.runOnUiThread(new Runnable() {
+//
+//                @Override
+//                public void run() {
+//                    receivedDataJ1708.setText(allReceivedDataJ1708);
+//                }
+//            });
+//        }
+//    }
 
-        if (allReceivedDataJ1708.length() < 300) {
-            mainActivity.runOnUiThread(new Runnable() {
 
-                @Override
-                public void run() {
-                    receivedDataJ1708.setText(allReceivedDataJ1708);
-                }
-            });
-        }
-    }
 
 }

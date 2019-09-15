@@ -251,21 +251,32 @@
         android:background="@drawable/border"
         android:orientation="vertical">
 
-        <TextView
-          android:layout_width="wrap_content"
+        <LinearLayout
+          android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginStart="10dp"
-          android:text="MCU LED"
-          android:textColor="@android:color/black"/>
+          android:orientation="horizontal">
 
-        <Switch
-          android:id="@+id/switchMcuLight"
-          android:layout_width="wrap_content"
+          <TextView
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="MCU LED"
+            android:textColor="@android:color/black"/>
+
+          <Switch
+            android:id="@+id/switchMcuLight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+          android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginStart="10dp"/>
+          android:orientation="horizontal">
 
         <TextView
-          android:layout_width="wrap_content"
+          android:layout_width="110dp"
           android:layout_height="wrap_content"
           android:layout_marginStart="10dp"
           android:text="Flash light"
@@ -276,6 +287,47 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
           android:layout_marginStart="10dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal">
+
+          <TextView
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="IR Led"
+            android:textColor="@android:color/black"/>
+
+          <Switch
+            android:id="@+id/switchIRLight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            />
+        </LinearLayout>
+
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal">
+
+          <TextView
+            android:layout_width="110dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="Notification Led"
+            android:textColor="@android:color/black"/>
+
+          <Switch
+            android:id="@+id/switchNotificationLight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"/>
+        </LinearLayout>
+
 
       </LinearLayout>
 

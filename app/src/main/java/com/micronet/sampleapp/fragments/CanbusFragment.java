@@ -9,8 +9,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -23,19 +21,13 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CompoundButton;
-import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
-import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.micronet.sampleapp.R;
-import com.micronet.sampleapp.SerialPort;
 import com.micronet.sampleapp.activities.MainActivity;
-import java.io.File;
-import java.io.FileDescriptor;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -45,10 +37,8 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
 
 /**
  * Canbus Fragment Class
@@ -62,6 +52,7 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
     Spinner bitrateList;
     RadioGroup terminationGroup;
     RadioGroup listenerModeGroup;
+    RadioGroup swcGroup;
     Button openCan;
     Button closeCan;
     EditText ids;
@@ -85,6 +76,7 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
     String allReceivedData = "";
     protected ReadThread mReadThread;
     byte[] data;
+    boolean swcEnabled = false;
 
     Class CanbusService;
     Class CanbusHardwareFilter;
@@ -156,11 +148,28 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
                 }
             }
         });
+        swcGroup = rootView.findViewById(R.id.swcGroup);
+        swcGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                if (checkedId == R.id.regular) {
+                    bitrateList.setEnabled(true);
+                    swcEnabled = false;
+                } else {
+                    currentBitrate = canbusBitrateListValues[2];
+                    bitrateList.setSelection(2);
+                    bitrateList.setEnabled(false);
+                    swcEnabled = true;
+                }
+            }
+        });
 
         openCan = rootView.findViewById(R.id.openCan);
         openCan.setOnClickListener(this);
         closeCan = rootView.findViewById(R.id.closeCan);
         closeCan.setOnClickListener(this);
+        closeCan.setEnabled(false);
 
         dockState = MainActivity.getDockState();
         if (dockState == -1 || dockState == 0) {
@@ -209,8 +218,13 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
                 if (TextUtils.isEmpty(dataToSend.getText().toString())) {
                     Toast.makeText(getContext(), "Enter data!", Toast.LENGTH_LONG).show();
                 } else {
+                    //data = mainActivity.toBinary(dataToSend.getText().toString());
+                    byte[] crByte = {0x0D};
                     data = dataToSend.getText().toString().getBytes();
-                    sendData(data);
+                    byte[] allData = new byte[data.length + 1];
+                    System.arraycopy(data, 0, allData, 0, data.length);
+                    System.arraycopy(crByte, 0, allData, data.length, 1);
+                    sendData(allData);
                 }
                 break;
 
@@ -345,8 +359,7 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
 
                 mReadThread = new ReadThread();
                 mReadThread.start();
-            }
-            else{
+            } else {
                 Toast.makeText(getContext(), "Can't open canbus", Toast.LENGTH_LONG).show();
             }
 
@@ -373,6 +386,9 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
             if (ret != -1) {
                 canOpened = false;
                 enableConfigView(true);
+                if (swcEnabled){
+                    bitrateList.setEnabled(false);
+                }
             }
         } catch (IllegalAccessException e) {
             e.printStackTrace();
@@ -460,6 +476,9 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
                         Log.d(TAG, "Dock event received: " + dockState);
                         if (dockState == -1 || dockState == 0) {
                             enableConfigView(true);
+                            if (swcEnabled){
+                                bitrateList.setEnabled(false);
+                            }
                             canOpened = false;
                             rootView.findViewById(R.id.CanbusFragment).setVisibility(View.INVISIBLE);
                             rootView.findViewById(R.id.disabledCan).setVisibility(View.VISIBLE);

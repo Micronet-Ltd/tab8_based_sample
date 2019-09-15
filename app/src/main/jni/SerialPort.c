@@ -93,6 +93,7 @@ JNIEXPORT jobject JNICALL Java_com_micronet_sampleapp_SerialPort_open
             return NULL;
         }
     }
+    tcflush(fd, TCIOFLUSH);
     /* Create a corresponding file descriptor */
     {
         jclass cFileDescriptor = (*env)->FindClass(env, "java/io/FileDescriptor");
@@ -160,6 +161,46 @@ JNIEXPORT void JNICALL Java_com_micronet_sampleapp_SerialPort_config
 }
 
 /*
+ * Class:     android_serialport_SerialPort
+ * Method:    open
+ * Signature: (Ljava/lang/String;I)Ljava/io/FileDescriptor;
+ */
+JNIEXPORT jobject JNICALL
+Java_com_micronet_sampleapp_j1708Port_DeviceOpen(JNIEnv *env, jobject thiz, jstring path, jint flags) {
+  //const char *path = env->GetStringUTFChars(path_, 0);
+
+  int fd;
+  speed_t speed;
+  jobject mFileDescriptor;
+
+  /* Check arguments */
+
+  jboolean iscopy;
+  const char *path_utf = (*env)->GetStringUTFChars(env, path, &iscopy);
+  LOGD("Opening serial port %s", path_utf);
+  fd = open(path_utf, O_RDWR, O_NDELAY);
+
+  (*env)->ReleaseStringUTFChars(env, path, path_utf);
+  if (fd == -1) {
+    /* Throw an exception */
+    LOGE("Cannot open port");
+    return NULL;
+  }
+  LOGD("open() fd = %d", fd);
+
+  /* Create a corresponding file descriptor */
+  {
+    jclass cFileDescriptor = (*env)->FindClass(env, "java/io/FileDescriptor");
+    jmethodID iFileDescriptor = (*env)->GetMethodID(env, cFileDescriptor, "<init>", "()V");
+    jfieldID descriptorID = (*env)->GetFieldID(env, cFileDescriptor, "descriptor", "I");
+    mFileDescriptor = (*env)->NewObject(env, cFileDescriptor, iFileDescriptor);
+    (*env)->SetIntField(env, mFileDescriptor, descriptorID, (jint) fd);
+  }
+
+  return mFileDescriptor;
+}
+
+/*
  * Class:     cedric_serial_SerialPort
  * Method:    close
  * Signature: ()V
@@ -178,6 +219,22 @@ JNIEXPORT void JNICALL Java_com_micronet_sampleapp_SerialPort_close
 
     LOGD("close(fd = %d)", descriptor);
     close(descriptor);
+}
+
+JNIEXPORT void JNICALL Java_com_micronet_sampleapp_j1708Port_close
+    (JNIEnv *env, jobject thiz)
+{
+  jclass SerialPortClass = (*env)->GetObjectClass(env, thiz);
+  jclass FileDescriptorClass = (*env)->FindClass(env, "java/io/FileDescriptor");
+
+  jfieldID mFdID = (*env)->GetFieldID(env, SerialPortClass, "mFd", "Ljava/io/FileDescriptor;");
+  jfieldID descriptorID = (*env)->GetFieldID(env, FileDescriptorClass, "descriptor", "I");
+
+  jobject mFd = (*env)->GetObjectField(env, thiz, mFdID);
+  jint descriptor = (*env)->GetIntField(env, mFd, descriptorID);
+
+  LOGD("close(fd = %d)", descriptor);
+  close(descriptor);
 }
 
 

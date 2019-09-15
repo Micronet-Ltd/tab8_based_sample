@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +24,6 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Switch;
 import android.widget.TextView;
 import com.micronet.sampleapp.R;
-import com.micronet.sampleapp.activities.MainActivity;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -50,6 +50,10 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
     TextView input6;
     TextView input7;
 
+//    Class SystemProperties;
+//    Method getProp = null;
+//    String boardType;
+
     private CameraManager camManager;
     public static final String vInputAction = "android.intent.action.VINPUTS_CHANGED";
     public static final String dockAction = "android.intent.action.DOCK_EVENT";
@@ -74,6 +78,14 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_inputs_outputs_leds, container, false);
+//        getProp();
+//        try {
+//            boardType = getProp.invoke(SystemProperties, new Object[]{"persist.vendor.board.config"}).toString();
+//        } catch (IllegalAccessException e) {
+//            e.printStackTrace();
+//        } catch (InvocationTargetException e) {
+//            e.printStackTrace();
+//        }
         //Outputs
         int[] outputValueList = getOutputsState();
         Switch out0 = rootView.findViewById(R.id.switchOutput0);
@@ -106,9 +118,31 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
         Switch switchMcuLightButton = rootView.findViewById(R.id.switchMcuLight);
         switchMcuLightButton.setChecked(false);
         switchMcuLightButton.setOnCheckedChangeListener(this);
+        Switch switchNotificationLightButton = rootView.findViewById(R.id.switchNotificationLight);
+        switchNotificationLightButton.setChecked(false);
+        switchNotificationLightButton.setOnCheckedChangeListener(this);
+        Switch switchIRLightButton = rootView.findViewById(R.id.switchIRLight);
+        switchIRLightButton.setChecked(false);
+        switchIRLightButton.setOnCheckedChangeListener(this);
 
         return rootView;
     }
+
+//    public void getProp(){
+//        try {
+//
+//            @SuppressWarnings("rawtypes")
+//            Class sp = Class.forName("android.os.SystemProperties");
+//            SystemProperties = sp;
+//            getProp = SystemProperties.getMethod("get", new Class[]{String.class});
+//
+//        } catch (IllegalArgumentException iAE) {
+//            throw iAE;
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//    }
 
     @Override
     public void onResume() {
@@ -315,6 +349,20 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
             case R.id.switchMcuLight:
                 setMcuLight(isChecked);
                 break;
+            case R.id.switchNotificationLight:
+                if (isChecked) {
+                    setNotificationLed(0xFFFFFFFF);
+                } else {
+                    setNotificationLed(0x00000000);
+                }
+                break;
+            case R.id.switchIRLight:
+                if (isChecked) {
+                    setIRLed(true);
+                } else {
+                    setIRLed(false);
+                }
+                break;
         }
     }
 
@@ -349,7 +397,7 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
         return inputView;
     }
 
-    private void setFlashLight(boolean setLight) {
+    public void setFlashLight(boolean setLight) {
         try {
             camManager = (CameraManager) getContext().getSystemService(Context.CAMERA_SERVICE);
             String cameraId = null; // Usually front camera is at 0 position.
@@ -362,7 +410,7 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
         }
     }
 
-    private void setMcuLight(boolean setLight) {
+    public void setMcuLight(boolean setLight) {
         int color;
         if (setLight) {
             color = 0xFFFFFFFF;
@@ -372,12 +420,18 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
         setMcuLed(color);
     }
 
-    private void setMcuLed(int color) {
+    public void setMcuLed(int color) {
         try {
             @SuppressWarnings("rawtypes")
 
             Class<?> LightsManager = Class.forName("com.android.server.lights.LightsManager");
             Class<?> Light = Class.forName("com.android.server.lights.Light");
+//            Field lightId;
+//            if (boardType.equals("smartcam")){
+//                lightId = LightsManager.getField(LIGHT_ID_ALARM);
+//            } else {
+//                lightId = LightsManager.getField("LIGHT_ID_KEYBOARD");
+//            }
             Field lightId = LightsManager.getField("LIGHT_ID_KEYBOARD");
             Constructor<?> constructor = LightsManager.getConstructor(Context.class);
             Object lightsManagerInstance = constructor.newInstance(getContext());
@@ -443,7 +497,7 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
         input7.setText(((getInput(7) == 0) ? "OFF (" : "ON (") + getInput(7) + ")");
     }
 
-    private String cradleType(int dockValue) {
+    public String cradleType(int dockValue) {
         String res = "Basic";
         String temp = Integer.toBinaryString(dockValue);
         if ((temp.length() >= 3) && (temp.charAt(temp.length() - 3) == '1')) {
@@ -451,4 +505,67 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
         }
         return res;
     }
+
+    public void setNotificationLed(int color) {
+        try {
+            @SuppressWarnings("rawtypes")
+
+            Class<?> LightsManager = Class.forName("com.android.server.lights.LightsManager");
+            Class<?> Light = Class.forName("com.android.server.lights.Light");
+            Field lightId = LightsManager.getField("LIGHT_ID_NOTIFICATIONS");
+            Constructor<?> constructor = LightsManager.getConstructor(Context.class);
+            Object lightsManagerInstance = constructor.newInstance(getContext());
+            Method getLight = LightsManager.getMethod("getLight", int.class);
+            Method setBrightness = Light.getMethod("setBrightness", int.class);
+            Object lightInstance = getLight.invoke(lightsManagerInstance, lightId.get(lightsManagerInstance));
+            setBrightness.invoke(lightInstance, color);
+
+        } catch (IllegalArgumentException iAE) {
+            throw iAE;
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (java.lang.InstantiationException e) {
+            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setIRLed(boolean on) {
+        try {
+            @SuppressWarnings("rawtypes")
+
+            Class<?> LightsManager = Class.forName("com.android.server.lights.LightsManager");
+            Class<?> Light = Class.forName("com.android.server.lights.Light");
+            Field lightId = LightsManager.getField("LIGHT_ID_BACKLIGHT");
+            Constructor<?> constructor = LightsManager.getConstructor(Context.class);
+            Object lightsManagerInstance = constructor.newInstance(getContext());
+            Method getLight = LightsManager.getMethod("getLight", int.class);
+            Method setIRLed = Light.getMethod("setIRLed", boolean.class);
+            Object lightInstance = getLight.invoke(lightsManagerInstance, lightId.get(lightsManagerInstance));
+            setIRLed.invoke(lightInstance, on);
+
+        } catch (IllegalArgumentException iAE) {
+            throw iAE;
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (java.lang.InstantiationException e) {
+            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+    }
+
 }

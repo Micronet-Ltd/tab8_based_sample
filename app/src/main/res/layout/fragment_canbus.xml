@@ -33,6 +33,30 @@
         android:layout_weight="1"
         android:background="@drawable/border"
         android:orientation="vertical">
+        <RadioGroup
+          android:id="@+id/swcGroup"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_centerHorizontal="true"
+          android:orientation="horizontal"
+          android:layout_marginLeft="10dp">
+
+          <RadioButton
+            android:id="@+id/regular"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="regular CAN"
+            android:textSize="10sp"/>
+
+          <RadioButton
+            android:id="@+id/SWC"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SWC"
+            android:textSize="10sp"/>
+
+        </RadioGroup>
 
         <TextView
           android:layout_width="wrap_content"

@@ -15,6 +15,15 @@ extern "C" {
 JNIEXPORT jobject JNICALL Java_com_micronet_sampleapp_SerialPort_open
         (JNIEnv *, jclass, jstring, jint);
 
+
+/*
+ * Class:     android_serialport_api_SerialPort
+ * Method:    open
+ * Signature: (Ljava/lang/String;I)Ljava/io/FileDescriptor;
+ */
+JNIEXPORT jobject JNICALL Java_com_micronet_sampleapp_j1708Port_DeviceOpen
+    (JNIEnv *, jclass, jstring, jint);
+
 /*
  * Class:     android_serialport_api_SerialPort
  * Method:    config
@@ -29,7 +38,10 @@ JNIEXPORT void JNICALL Java_com_micronet_sampleapp_SerialPort_config
  * Signature: ()V
  */
 JNIEXPORT void JNICALL Java_com_micronet_sampleapp_SerialPort_close
-        (JNIEnv *, jobject);
+    (JNIEnv *, jobject);
+
+JNIEXPORT void JNICALL Java_com_micronet_sampleapp_j1708Port_close
+    (JNIEnv *, jobject);
 
 #ifdef __cplusplus
 }

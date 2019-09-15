@@ -1,7 +1,6 @@
 package com.micronet.sampleapp;
 
 import android.util.Log;
-
 import java.io.File;
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -10,11 +9,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import static java.lang.System.loadLibrary;
+public class j1708Port {
 
-public class SerialPort {
-
-    private static final String TAG = "SerialPort";
+    private static final String TAG = "j1708Port";
 
     /*
      * Do not remove or rename the field mFd: it is used by native method close();
@@ -23,7 +20,7 @@ public class SerialPort {
     private FileInputStream mFileInputStream;
     private FileOutputStream mFileOutputStream;
 
-    public SerialPort(File device, int flags) throws SecurityException, IOException {
+    public j1708Port(File device, int flags) throws SecurityException, IOException {
 
         /* Check access permission */
         Log.d(TAG, "==> SerialPort before \" can read \" ========================================");
@@ -48,7 +45,7 @@ public class SerialPort {
             Log.d(TAG, "==> SerialPort after no permission ========================================");
         }
         Log.d(TAG, "==> SerialPort before open ========================================");
-        mFd = open(device.getAbsolutePath(), flags);
+        mFd = DeviceOpen(device.getAbsolutePath(), flags);
         if (mFd == null) {
             Log.d(TAG, "==> SerialPort mFd = null ========================================");
             Log.e(TAG, "native open returns null");
@@ -69,9 +66,9 @@ public class SerialPort {
     }
 
     // JNI
-    private native static FileDescriptor open(String path, int flags);
-   // private native static FileDescriptor Device_open(String path, int flags);
-    public native static void config(int baudrate);
+    //private native static FileDescriptor open(String path, int flags);
+    private native static FileDescriptor DeviceOpen(String path, int flags);
+   // public native static void config(int baudrate);
     public native void close();
     //    public native void read();
     static {
