@@ -5,17 +5,14 @@
 
 package com.micronet.sampleapp.fragments;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +21,7 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Switch;
 import android.widget.TextView;
 import com.micronet.sampleapp.R;
+import com.micronet.sampleapp.activities.MainActivity;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -36,10 +34,6 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
 
     private final String TAG = "InputOutputLedFragment";
     private View rootView;
-    private int dockState = -1;
-    int cradleType = -1;
-    protected int mInputNum = -1;
-    protected int mInputValue = -1;
 
     TextView input0;
     TextView input1;
@@ -50,14 +44,16 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
     TextView input6;
     TextView input7;
 
+    Switch out0;
+    Switch out1;
+    Switch out2;
+    Switch out3;
+
+    private CameraManager camManager;
+
 //    Class SystemProperties;
 //    Method getProp = null;
 //    String boardType;
-
-    private CameraManager camManager;
-    public static final String vInputAction = "android.intent.action.VINPUTS_CHANGED";
-    public static final String dockAction = "android.intent.action.DOCK_EVENT";
-
 
     public InputsOutputsLedsFragment() {
         // Required empty public constructor
@@ -67,41 +63,15 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(dockAction);
-        intentFilter.addAction(vInputAction);
-
-        getActivity().registerReceiver(mReceiver, intentFilter);
     }
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_inputs_outputs_leds, container, false);
-//        getProp();
-//        try {
-//            boardType = getProp.invoke(SystemProperties, new Object[]{"persist.vendor.board.config"}).toString();
-//        } catch (IllegalAccessException e) {
-//            e.printStackTrace();
-//        } catch (InvocationTargetException e) {
-//            e.printStackTrace();
-//        }
-        //Outputs
-        int[] outputValueList = getOutputsState();
-        Switch out0 = rootView.findViewById(R.id.switchOutput0);
-        out0.setChecked((outputValueList[0] == 1) ? true : false);
-        out0.setOnCheckedChangeListener(this);
-        Switch out1 = rootView.findViewById(R.id.switchOutput1);
-        out1.setChecked((outputValueList[1] == 1) ? true : false);
-        out1.setOnCheckedChangeListener(this);
-        Switch out2 = rootView.findViewById(R.id.switchOutput2);
-        out2.setChecked((outputValueList[2] == 1) ? true : false);
-        out2.setOnCheckedChangeListener(this);
-        Switch out3 = rootView.findViewById(R.id.switchOutput3);
-        out3.setChecked((outputValueList[3] == 1) ? true : false);
-        out3.setOnCheckedChangeListener(this);
 
         //Inputs
+
         input0 = rootView.findViewById(R.id.input0);
         input1 = rootView.findViewById(R.id.input1);
         input2 = rootView.findViewById(R.id.input2);
@@ -111,6 +81,28 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
         input6 = rootView.findViewById(R.id.input6);
         input7 = rootView.findViewById(R.id.input7);
         updateInputValues();
+
+        //Outputs
+
+        out0 = rootView.findViewById(R.id.switchOutput0);
+        out1 = rootView.findViewById(R.id.switchOutput1);
+        out2 = rootView.findViewById(R.id.switchOutput2);
+        out3 = rootView.findViewById(R.id.switchOutput3);
+        out0.setOnCheckedChangeListener(this);
+        out1.setOnCheckedChangeListener(this);
+        out2.setOnCheckedChangeListener(this);
+        out3.setOnCheckedChangeListener(this);
+        updateOutputState();
+
+//        getProp();
+//        try {
+//            boardType = getProp.invoke(SystemProperties, new Object[]{"persist.vendor.board.config"}).toString();
+//        } catch (IllegalAccessException e) {
+//            e.printStackTrace();
+//        } catch (InvocationTargetException e) {
+//            e.printStackTrace();
+//        }
+
         //Lights
         Switch switchFlashLightButton = rootView.findViewById(R.id.switchFlashLight);
         switchFlashLightButton.setChecked(false);
@@ -148,38 +140,25 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
     public void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
-        // Register for local broadcasts
-        Context context = getContext();
-        if (context != null) {
-        }
-
         updateCradleIgnState();
-    }
-
-    @Override
-    public void onDestroy() {
-        getActivity().unregisterReceiver(mReceiver);
-        super.onDestroy();
     }
 
     @Override
     public void onPause() {
         super.onPause();
         Log.d(TAG, "onPause");
-        // getActivity().unregisterReceiver(mReceiver);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-//        getActivity().unregisterReceiver(mReceiver);
         Log.d(TAG, "onStop");
     }
 
-    private void updateCradleIgnState() {
+    public void updateCradleIgnState() {
         String cradleStateMsg, ignitionStateMsg;
 
-        switch (dockState) {
+        switch (MainActivity.dockState) {
             case Intent.EXTRA_DOCK_STATE_UNDOCKED:
                 cradleStateMsg = getString(R.string.not_in_cradle_state_text);
                 ignitionStateMsg = getString(R.string.ignition_unknown_state_text);
@@ -187,11 +166,11 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
             case Intent.EXTRA_DOCK_STATE_DESK:
             case Intent.EXTRA_DOCK_STATE_LE_DESK:
             case Intent.EXTRA_DOCK_STATE_HE_DESK:
-                cradleStateMsg = getString(R.string.in_cradle_state_text) + "(" + cradleType(cradleType) + ")";
+                cradleStateMsg = getString(R.string.in_cradle_state_text) + "(" + MainActivity.getCradleType(MainActivity.cradleType) + ")";
                 ignitionStateMsg = getString(R.string.ignition_off_state_text);
                 break;
             case Intent.EXTRA_DOCK_STATE_CAR:
-                cradleStateMsg = getString(R.string.in_cradle_state_text) + "(" + cradleType(cradleType) + ")";
+                cradleStateMsg = getString(R.string.in_cradle_state_text) + "(" + MainActivity.getCradleType(MainActivity.cradleType) + ")";
                 ignitionStateMsg = getString(R.string.ignition_on_state_text);
                 break;
             default:
@@ -205,8 +184,135 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
         TextView ignitionStateTextview = rootView.findViewById(R.id.textViewIgnitionState1);
         cradleStateTextview.setText(cradleStateMsg);
         ignitionStateTextview.setText(ignitionStateMsg);
-        //updateInputValues();
     }
+
+    /**
+     * Receive input number return input value
+     */
+    public int getInput(int inputNumber) {
+        int inputValue = -1;
+        try {
+            @SuppressWarnings("rawtypes")
+            Class InputOutputService = Class.forName("com.android.server.vinputs.InputOutputService");
+            Method readInput = InputOutputService.getMethod("readInput", int.class);
+            Constructor<?> constructor = InputOutputService.getConstructor();
+            Object ioServiceInstance = constructor.newInstance();
+            inputValue = (int) readInput.invoke(ioServiceInstance, inputNumber);
+        } catch (IllegalArgumentException iAE) {
+            throw iAE;
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (java.lang.InstantiationException e) {
+            e.printStackTrace();
+        }
+        return inputValue;
+    }
+
+    private TextView getInputView(int inputNum) {
+        TextView inputView = null;
+        switch (inputNum) {
+            case 0:
+                inputView = input0;
+                break;
+            case 1:
+                inputView = input1;
+                break;
+            case 2:
+                inputView = input2;
+                break;
+            case 3:
+                inputView = input3;
+                break;
+            case 4:
+                inputView = input4;
+                break;
+            case 5:
+                inputView = input5;
+                break;
+            case 6:
+                inputView = input6;
+                break;
+            case 7:
+                inputView = input7;
+                break;
+        }
+        return inputView;
+    }
+
+    public void updateInputState(int inputNum, int inputValue) {
+        if (Integer.toString(inputValue) != null) {
+            getInputView(inputNum).setText(((inputValue == 0) ? "OFF (" : "ON (") + Integer.toString(inputValue) + ")");
+        } else {
+            getInputView(inputNum).setText("OFF (0)");
+        }
+        Log.d(TAG, "Vinput event received. Input number: " + inputNum + ". InputValue: " + inputValue);
+    }
+
+    public void updateInputValues() {
+        if (MainActivity.devType == MainActivity.SMARTTAB_STAND_ALONE) {
+            rootView.findViewById(R.id.inputsView).setVisibility(View.INVISIBLE);
+            rootView.findViewById(R.id.inputsUnavaliable).setVisibility(View.VISIBLE);
+        } else {
+            rootView.findViewById(R.id.inputsUnavaliable).setVisibility(View.INVISIBLE);
+            rootView.findViewById(R.id.inputsView).setVisibility(View.VISIBLE);
+            input0.setText(((getInput(0) == 0) ? "OFF (" : "ON (") + getInput(0) + ")");
+            input1.setText(((getInput(1) == 0) ? "OFF (" : "ON (") + getInput(1) + ")");
+            if (MainActivity.devType != MainActivity.SMARTCAM_BASIC
+                && MainActivity.devType != MainActivity.SMARTCAM_ENHANCED) { //todo check number of inputs for smartcam enhanced
+                input2.setText(((getInput(2) == 0) ? "OFF (" : "ON (") + getInput(2) + ")");
+                input3.setText(((getInput(3) == 0) ? "OFF (" : "ON (") + getInput(3) + ")");
+                input4.setText(((getInput(4) == 0) ? "OFF (" : "ON (") + getInput(4) + ")");
+                input5.setText(((getInput(5) == 0) ? "OFF (" : "ON (") + getInput(5) + ")");
+                input6.setText(((getInput(6) == 0) ? "OFF (" : "ON (") + getInput(6) + ")");
+                input7.setText(((getInput(7) == 0) ? "OFF (" : "ON (") + getInput(7) + ")");
+            } else {
+                rootView.findViewById(R.id.in2).setVisibility(View.INVISIBLE);
+                rootView.findViewById(R.id.in3).setVisibility(View.INVISIBLE);
+                rootView.findViewById(R.id.in4).setVisibility(View.INVISIBLE);
+                rootView.findViewById(R.id.in5).setVisibility(View.INVISIBLE);
+                rootView.findViewById(R.id.in6).setVisibility(View.INVISIBLE);
+                rootView.findViewById(R.id.in7).setVisibility(View.INVISIBLE);
+            }
+        }
+
+    }
+
+    public void updateOutputState() {
+        if (MainActivity.devType == MainActivity.SMARTTAB_STAND_ALONE) {
+            rootView.findViewById(R.id.outputsView).setVisibility(View.INVISIBLE);
+            rootView.findViewById(R.id.outputsUnavaliable).setVisibility(View.VISIBLE);
+        } else {
+            rootView.findViewById(R.id.outputsUnavaliable).setVisibility(View.INVISIBLE);
+            rootView.findViewById(R.id.outputsView).setVisibility(View.VISIBLE);
+            int[] outputValueList = getOutputsState();
+            if (outputValueList.length >= 1) {
+                out0.setChecked((outputValueList[0] == 1) ? true : false);
+            }
+            if (outputValueList.length >= 2) {
+                out1.setChecked((outputValueList[1] == 1) ? true : false);
+            }
+            if (MainActivity.devType != MainActivity.SMARTCAM_BASIC
+                && MainActivity.devType != MainActivity.SMARTCAM_ENHANCED) { //todo check for smartcam
+                if (outputValueList.length >= 3) {
+                    out2.setChecked((outputValueList[2] == 1) ? true : false);
+                }
+                if (outputValueList.length >= 4) {
+                    out3.setChecked((outputValueList[3] == 1) ? true : false);
+                }
+            } else {
+                rootView.findViewById(R.id.out2).setVisibility(View.INVISIBLE);
+                rootView.findViewById(R.id.out3).setVisibility(View.INVISIBLE);
+            }
+        }
+
+    }
+
 
     private void setOutput(int outputId, boolean on) {
         try {
@@ -260,72 +366,12 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
     }
 
     private int[] getOutputsSetList(String res) {
-        int[] result = {0, 0, 0, 0};
         char[] temp = Integer.toBinaryString(Integer.parseInt(res, 16)).toCharArray();
+        int[] result = new int[temp.length];
         for (int i = 0; i < temp.length; i++) {
             result[i] = Integer.parseInt(String.valueOf(temp[temp.length - 1 - i]));
         }
         return result;
-    }
-
-    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            goAsync();
-            Log.d(TAG, "dock or input action received");
-            String action = intent.getAction();
-            if (action != null) {
-                switch (action) {
-                    case dockAction:
-                        dockState = intent.getIntExtra(Intent.EXTRA_DOCK_STATE, -1);
-                        cradleType = intent.getIntExtra("DockValue", -1);
-                        updateCradleIgnState();
-                        Log.d(TAG, "Dock event received: " + dockState + ", value: " + cradleType);
-                        break;
-                    case vInputAction:
-                        mInputNum = intent.getIntExtra("VINPUT_NUM", -1);
-                        mInputValue = intent.getIntExtra("VINPUT_VALUE", -1);
-                        if (Integer.toString(mInputValue) != null) {
-                            getInputView(mInputNum).setText(((mInputValue == 0) ? "OFF (" : "ON (") + Integer.toString(mInputValue) + ")");
-                        } else {
-                            getInputView(mInputNum).setText("OFF (0)");
-                        }
-                        Log.d(TAG, "Vinput event received. Input number: " + mInputNum + ". InputValue: " + mInputValue);
-                        break;
-                }
-            }
-
-
-        }
-    };
-
-    /**
-     * Receive input number return input value
-     */
-    public int getInput(int inputNumber) {
-        int inputValue = -1;
-        try {
-            @SuppressWarnings("rawtypes")
-            Class InputOutputService = Class.forName("com.android.server.vinputs.InputOutputService");
-            Method readInput = InputOutputService.getMethod("readInput", int.class);
-            Constructor<?> constructor = InputOutputService.getConstructor();
-            Object ioServiceInstance = constructor.newInstance();
-            inputValue = (int) readInput.invoke(ioServiceInstance, inputNumber);
-        } catch (IllegalArgumentException iAE) {
-            throw iAE;
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (java.lang.InstantiationException e) {
-            e.printStackTrace();
-        }
-        return inputValue;
     }
 
     @Override
@@ -351,7 +397,10 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
                 break;
             case R.id.switchNotificationLight:
                 if (isChecked) {
-                    setNotificationLed(0xFFFFFFFF);
+
+                    setNotificationLed(0xffffffff);
+                    //setNotificationRedLed(0xffffffff);
+                    //
                 } else {
                     setNotificationLed(0x00000000);
                 }
@@ -366,36 +415,6 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
         }
     }
 
-    private TextView getInputView(int inputNum) {
-        TextView inputView = null;
-        switch (inputNum) {
-            case 0:
-                inputView = input0;
-                break;
-            case 1:
-                inputView = input1;
-                break;
-            case 2:
-                inputView = input2;
-                break;
-            case 3:
-                inputView = input3;
-                break;
-            case 4:
-                inputView = input4;
-                break;
-            case 5:
-                inputView = input5;
-                break;
-            case 6:
-                inputView = input6;
-                break;
-            case 7:
-                inputView = input7;
-                break;
-        }
-        return inputView;
-    }
 
     public void setFlashLight(boolean setLight) {
         try {
@@ -426,12 +445,6 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
 
             Class<?> LightsManager = Class.forName("com.android.server.lights.LightsManager");
             Class<?> Light = Class.forName("com.android.server.lights.Light");
-//            Field lightId;
-//            if (boardType.equals("smartcam")){
-//                lightId = LightsManager.getField(LIGHT_ID_ALARM);
-//            } else {
-//                lightId = LightsManager.getField("LIGHT_ID_KEYBOARD");
-//            }
             Field lightId = LightsManager.getField("LIGHT_ID_KEYBOARD");
             Constructor<?> constructor = LightsManager.getConstructor(Context.class);
             Object lightsManagerInstance = constructor.newInstance(getContext());
@@ -457,19 +470,33 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
         }
     }
 
-    /**
-     * returns String value (from input_all)
-     */
+    public String getCradleType(int dockValue) {
+        String res = "Basic";
+        String temp = Integer.toBinaryString(dockValue);
+        if ((temp.length() >= 3) && (temp.charAt(temp.length() - 3) == '1')) {
+            res = "Enhanced";
+        }
+        return res;
+    }
 
-    public String getAllInputs() {
-        String inputsValue = "";
+    public void setNotificationLed(int color) {
         try {
             @SuppressWarnings("rawtypes")
-            Class InputOutputService = Class.forName("com.android.server.vinputs.InputOutputService");
-            Method readAllInputs = InputOutputService.getMethod("readAllInputs");
-            Constructor<?> constructor = InputOutputService.getConstructor();
-            Object ioServiceInstance = constructor.newInstance();
-            inputsValue = (String) readAllInputs.invoke(ioServiceInstance);
+
+            Class<?> LightsManager = Class.forName("com.android.server.lights.LightsManager");
+            Class<?> Light = Class.forName("com.android.server.lights.Light");
+            Field lightId = LightsManager.getField("LIGHT_ID_NOTIFICATIONS"); ///ADD _BATTERY
+            Constructor<?> constructor = LightsManager.getConstructor(Context.class);
+            Object lightsManagerInstance = constructor.newInstance(getContext());
+            Method getLight = LightsManager.getMethod("getLight", int.class);
+            Method setColor = Light.getMethod("setColor", int.class);
+            Object lightInstance = getLight.invoke(lightsManagerInstance, lightId.get(lightsManagerInstance));
+            setColor.invoke(lightInstance, color);
+
+//            Method setBrightness = Light.getMethod("setFlashing", int.class, int.class, int.class, int.class);
+//            Object lightInstance = getLight.invoke(lightsManagerInstance, lightId.get(lightsManagerInstance));
+//            setBrightness.invoke(lightInstance, color, 2, 100, 200);
+
         } catch (IllegalArgumentException iAE) {
             throw iAE;
         } catch (ClassNotFoundException e) {
@@ -482,43 +509,30 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
             e.printStackTrace();
         } catch (java.lang.InstantiationException e) {
             e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
         }
-        return inputsValue;
     }
 
-    private void updateInputValues() {
-        input0.setText(((getInput(0) == 0) ? "OFF (" : "ON (") + getInput(0) + ")");
-        input1.setText(((getInput(1) == 0) ? "OFF (" : "ON (") + getInput(1) + ")");
-        input2.setText(((getInput(2) == 0) ? "OFF (" : "ON (") + getInput(2) + ")");
-        input3.setText(((getInput(3) == 0) ? "OFF (" : "ON (") + getInput(3) + ")");
-        input4.setText(((getInput(4) == 0) ? "OFF (" : "ON (") + getInput(4) + ")");
-        input5.setText(((getInput(5) == 0) ? "OFF (" : "ON (") + getInput(5) + ")");
-        input6.setText(((getInput(6) == 0) ? "OFF (" : "ON (") + getInput(6) + ")");
-        input7.setText(((getInput(7) == 0) ? "OFF (" : "ON (") + getInput(7) + ")");
-    }
-
-    public String cradleType(int dockValue) {
-        String res = "Basic";
-        String temp = Integer.toBinaryString(dockValue);
-        if ((temp.length() >= 3) && (temp.charAt(temp.length() - 3) == '1')) {
-            res = "Smart";
-        }
-        return res;
-    }
-
-    public void setNotificationLed(int color) {
+    //Marina - added red led notification
+    public void setNotificationRedLed(int color) {
         try {
             @SuppressWarnings("rawtypes")
 
             Class<?> LightsManager = Class.forName("com.android.server.lights.LightsManager");
             Class<?> Light = Class.forName("com.android.server.lights.Light");
-            Field lightId = LightsManager.getField("LIGHT_ID_NOTIFICATIONS");
+            Field lightId = LightsManager.getField("LIGHT_ID_BATTERY"); ///ADD _BATTERY
+
             Constructor<?> constructor = LightsManager.getConstructor(Context.class);
             Object lightsManagerInstance = constructor.newInstance(getContext());
             Method getLight = LightsManager.getMethod("getLight", int.class);
-            Method setBrightness = Light.getMethod("setBrightness", int.class);
+            Method setColor = Light.getMethod("setColor", int.class);
             Object lightInstance = getLight.invoke(lightsManagerInstance, lightId.get(lightsManagerInstance));
-            setBrightness.invoke(lightInstance, color);
+            setColor.invoke(lightInstance, color);
+
+//            Method setBrightness = Light.getMethod("setFlashing", int.class, int.class, int.class, int.class);
+//            Object lightInstance = getLight.invoke(lightsManagerInstance, lightId.get(lightsManagerInstance));
+//            setBrightness.invoke(lightInstance, color, 2, 100, 200);
 
         } catch (IllegalArgumentException iAE) {
             throw iAE;
