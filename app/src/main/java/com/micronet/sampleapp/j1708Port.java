@@ -25,22 +25,6 @@ public class j1708Port {
         /* Check access permission */
         Log.d(TAG, "==> SerialPort before \" can read \" ========================================");
         if (!device.canRead() || !device.canWrite()) {
-//            try {
-//                Log.d(TAG, "==> SerialPort before no permission ========================================");
-//                /* Missing read/write permission, trying to chmod the file */
-//                Process su;
-//                su = Runtime.getRuntime().exec("/system/xbin/su");
-//                String cmd = "chmod 666 " + device.getAbsolutePath() + "\n"
-//                    + "exit\n";
-//                su.getOutputStream().write(cmd.getBytes());
-//                if ((su.waitFor() != 0) || !device.canRead()
-//                    || !device.canWrite()) {
-//                    throw new SecurityException();
-//                }
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//                throw new SecurityException();
-//            }
             Log.d(TAG, "ERROR: Can't read and/or write from/to serial port " + device.toString());
             Log.d(TAG, "==> SerialPort after no permission ========================================");
         }
@@ -66,11 +50,8 @@ public class j1708Port {
     }
 
     // JNI
-    //private native static FileDescriptor open(String path, int flags);
     private native static FileDescriptor DeviceOpen(String path, int flags);
-   // public native static void config(int baudrate);
     public native void close();
-    //    public native void read();
     static {
         System.loadLibrary("Serial_port");
     }

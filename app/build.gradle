@@ -11,8 +11,8 @@ android {
         applicationId "com.micronet.sampleapp"
         minSdkVersion 23
         targetSdkVersion 27
-        versionCode 140
-        versionName "1.4.0"
+        versionCode 150
+        versionName "1.5.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         ndk{
             abiFilters "armeabi-v7a", "x86"

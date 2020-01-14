@@ -31,24 +31,24 @@
       android:layout_height="wrap_content"
       android:orientation="horizontal">
 
-      <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAlignment="center"
-        android:textColor="@android:color/black"
-        android:text="How many minutes to wait before wake up:  "/>
+      <!--<TextView-->
+        <!--android:layout_width="wrap_content"-->
+        <!--android:layout_height="wrap_content"-->
+        <!--android:textAlignment="center"-->
+        <!--android:textColor="@android:color/black"-->
+        <!--android:text="How many minutes to wait before wake up:  "/>-->
 
-      <EditText
-        android:id="@+id/waitingTime"
-        android:layout_width="80dp"
-        android:layout_height="50dp"/>
+      <!--<EditText-->
+        <!--android:id="@+id/waitingTime"-->
+        <!--android:layout_width="80dp"-->
+        <!--android:layout_height="50dp"/>-->
 
-      <Button
-        android:id="@+id/setAlarm"
-        android:layout_width="70dp"
-        android:layout_height="50dp"
-        android:text="set alarm"
-        android:textSize="5pt"/>
+      <!--<Button-->
+        <!--android:id="@+id/setAlarm"-->
+        <!--android:layout_width="70dp"-->
+        <!--android:layout_height="50dp"-->
+        <!--android:text="set alarm"-->
+        <!--android:textSize="5pt"/>-->
     </LinearLayout>
 
   </LinearLayout>

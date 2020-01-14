@@ -15,6 +15,7 @@ import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -25,6 +26,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import android.view.KeyEvent;
+import android.view.View;
+import android.view.ViewGroup;
 import com.micronet.sampleapp.R;
 import com.micronet.sampleapp.fragments.AboutFragment;
 import com.micronet.sampleapp.fragments.CanbusFragment;
@@ -33,6 +36,8 @@ import com.micronet.sampleapp.fragments.PortsFragment;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
     public static final String vInputAction = "android.intent.action.VINPUTS_CHANGED";
     public static final String dockAction = "android.intent.action.DOCK_EVENT";
     public static int dockState = -1;
-    public static int actionId = 0;
+    public static int actionId = 1;
     private CameraManager camManager;
     public static int devType = -1;
     public static int cradleType = -1;
@@ -57,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
     AboutFragment aboutFragment = new AboutFragment();
     PortsFragment portsFragment = new PortsFragment();
     CanbusFragment canbusFragment = new CanbusFragment();
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +96,15 @@ public class MainActivity extends AppCompatActivity {
                             ioLedFragment.updateInputValues();
                             ioLedFragment.updateOutputState();
                         }
+                        if (aboutFragment.isAdded()) {
+                            aboutFragment.updateInfoText();
+                        }
+                        if (portsFragment.isAdded()) {
+                            portsFragment.updatePorts();
+                        }
+                        if (canbusFragment.isAdded()) {
+                            canbusFragment.updateCanbus();
+                        }
                         Log.d(TAG, "Dock event received: " + dockState + ", value: " + getCradleType(cradleType));
                         break;
                     case vInputAction:
@@ -120,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         Log.d("AAAAAAAA key", "keycode: " + keyCode);
-        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP && actionId != 0) {
+        if ((keyCode == KeyEvent.KEYCODE_F1 && Build.MODEL.equals("MSTab8")) || (keyCode == KeyEvent.KEYCODE_WINDOW && Build.MODEL.equals("MSCAM"))) {
             event.startTracking();
             return true;
         } else {
@@ -130,13 +143,13 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+        if ((keyCode == KeyEvent.KEYCODE_F1 && Build.MODEL.equals("MSTab8")) || (keyCode == KeyEvent.KEYCODE_WINDOW && Build.MODEL.equals("MSCAM"))) {
             if (event.isTracking() && !event.isCanceled()) {
                 switch (actionId) {
-                    case 1:
+                    case 0:
                         setFlashLight(true);
                         break;
-                    case 2:
+                    case 1:
                         setFlashLight(false);
                         break;
                 }
@@ -263,16 +276,16 @@ public class MainActivity extends AppCompatActivity {
         return res;
     }
 
-    public int getBoardType() {
+    public static int getBoardType() {
         int ret = 0;
         ret = Integer.parseInt(getSystemProperty("hw.board.id"));
         return ret;
     }
 
-    public int getDeviceType() {
-        int ret = 0;
+    public static int getDeviceType() {
         int boardType = getBoardType();
-        if (dockState == Intent.EXTRA_DOCK_STATE_UNDOCKED) {
+
+        if (dockState == Intent.EXTRA_DOCK_STATE_UNDOCKED || dockState == -1) {
             return SMARTTAB_STAND_ALONE;
         }
         switch (boardType) {
@@ -288,18 +301,47 @@ public class MainActivity extends AppCompatActivity {
         return -1;
     }
 
-    //todo change to SystemProperties and remove this function from AboutFragment
-    private static String getSystemProperty(String propertyName) {
-        String propertyValue = "Unknown";
+    public static String getDevTypeMessage(int devType) {
 
+        switch (devType) {
+            case 0:
+                return "Tab8 standalone";
+            case 1:
+                return "Tab8-LowCost";
+            case 2:
+                return "TAB8 LTE";
+            case 3:
+                return "SmartCam (basic)";
+            case 4:
+                return "SmartCam (full)";
+        }
+        return "Unknown";
+    }
+
+    public static String getSystemProperty(String propName) {
+        String propValue = "";
         try {
-            Process getPropProcess = Runtime.getRuntime().exec("getprop " + propertyName);
-            BufferedReader osRes = new BufferedReader(new InputStreamReader(getPropProcess.getInputStream()));
-            propertyValue = osRes.readLine();
-            osRes.close();
+            @SuppressWarnings("rawtypes")
+            Class sp = Class.forName("android.os.SystemProperties");
+            Class SystemProperties = sp;
+            Method getProp = SystemProperties.getMethod("get", new Class[]{String.class});
+            propValue = getProp.invoke(SystemProperties, new Object[]{propName}).toString();
+        } catch (IllegalArgumentException iAE) {
+            throw iAE;
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return propertyValue;
+        return propValue;
+    }
+
+    public static void setViewAndChildrenEnabled(View view, boolean enabled) {
+        view.setEnabled(enabled);
+        if (view instanceof ViewGroup) {
+            ViewGroup viewGroup = (ViewGroup) view;
+            for (int i = 0; i < viewGroup.getChildCount(); i++) {
+                View child = viewGroup.getChildAt(i);
+                setViewAndChildrenEnabled(child, enabled);
+            }
+        }
     }
 }

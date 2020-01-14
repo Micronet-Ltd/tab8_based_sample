@@ -369,7 +369,7 @@
     android:id="@+id/disabledCan"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:text="Not Avaliable (device not in cradle)"
+    android:text="Canbus Unaliable"
     android:layout_gravity="center"
     android:layout_centerHorizontal="true"
     android:layout_marginTop="150dp"

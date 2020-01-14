@@ -5,15 +5,10 @@
 
 package com.micronet.sampleapp.fragments;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -99,9 +94,6 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         importClasses();
-        IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(dockAction);
-        getActivity().registerReceiver(mReceiver, intentFilter);
     }
 
     @Override
@@ -170,30 +162,19 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
         closeCan = rootView.findViewById(R.id.closeCan);
         closeCan.setOnClickListener(this);
         closeCan.setEnabled(false);
-
-        dockState = MainActivity.getDockState();
-        if (dockState == -1 || dockState == 0) {
-            rootView.findViewById(R.id.CanbusFragment).setVisibility(View.INVISIBLE);
-            rootView.findViewById(R.id.disabledCan).setVisibility(View.VISIBLE);
-        } else {
-            rootView.findViewById(R.id.CanbusFragment).setVisibility(View.VISIBLE);
-            rootView.findViewById(R.id.disabledCan).setVisibility(View.INVISIBLE);
-            enableConfigView(!canOpened);
-
-        }
         receivedData = rootView.findViewById(R.id.receivedData);
         clearData = rootView.findViewById(R.id.clearData);
         clearData.setOnClickListener(this);
         dataToSend = rootView.findViewById(R.id.dataToSend);
         sendData = rootView.findViewById(R.id.sendData);
         sendData.setOnClickListener(this);
+        updateCanbus();
         return rootView;
     }
 
 
     @Override
     public void onDestroy() {
-        getActivity().unregisterReceiver(mReceiver);
         if (mReadThread != null) {
             mReadThread.interrupt();
         }
@@ -218,7 +199,6 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
                 if (TextUtils.isEmpty(dataToSend.getText().toString())) {
                     Toast.makeText(getContext(), "Enter data!", Toast.LENGTH_LONG).show();
                 } else {
-                    //data = mainActivity.toBinary(dataToSend.getText().toString());
                     byte[] crByte = {0x0D};
                     data = dataToSend.getText().toString().getBytes();
                     byte[] allData = new byte[data.length + 1];
@@ -307,13 +287,8 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
 
     public int configAndOpenCan() {
         int ret = 0;
-        String[] idsStr = null;
-        String[] maskStr = null;
-        String[] typeStr = null;
-
-        int[] tempIds = {};
-        int[] tempMask = {};
-        int[] tempType = {};
+        String[] idsStr, maskStr, typeStr;
+        int[] tempIds, tempMask, tempType;
 
         if (TextUtils.isEmpty(ids.getText().toString())) {
             tempIds = new int[]{0x00000000, 0x00000000};
@@ -386,7 +361,7 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
             if (ret != -1) {
                 canOpened = false;
                 enableConfigView(true);
-                if (swcEnabled){
+                if (swcEnabled) {
                     bitrateList.setEnabled(false);
                 }
             }
@@ -434,64 +409,29 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
         }
     }
 
-//    private class OpenCanThread extends Thread {
-//
-//        @Override
-//        public void run() {
-//            super.run();
-//            configAndOpenCan();
-//        }
-//    }
-
     public void enableConfigView(boolean enable) {
-        setViewAndChildrenEnabled(rootView.findViewById(R.id.maskConfiguration), enable);
-        setViewAndChildrenEnabled(rootView.findViewById(R.id.canConfiguration), enable);
+        MainActivity.setViewAndChildrenEnabled(rootView.findViewById(R.id.maskConfiguration), enable);
+        MainActivity.setViewAndChildrenEnabled(rootView.findViewById(R.id.canConfiguration), enable);
         closeCan.setEnabled(!enable);
         openCan.setEnabled(enable);
-        setViewAndChildrenEnabled(rootView.findViewById(R.id.dataConfiguration), !enable);
+        MainActivity.setViewAndChildrenEnabled(rootView.findViewById(R.id.dataConfiguration), !enable);
     }
 
-    private static void setViewAndChildrenEnabled(View view, boolean enabled) {
-        view.setEnabled(enabled);
-        if (view instanceof ViewGroup) {
-            ViewGroup viewGroup = (ViewGroup) view;
-            for (int i = 0; i < viewGroup.getChildCount(); i++) {
-                View child = viewGroup.getChildAt(i);
-                setViewAndChildrenEnabled(child, enabled);
-            }
-        }
-    }
-
-    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            goAsync();
-            Log.d(TAG, "dock action received");
-            String action = intent.getAction();
-            if (action != null) {
-                switch (action) {
-                    case dockAction:
-                        dockState = intent.getIntExtra(Intent.EXTRA_DOCK_STATE, -1);
-                        Log.d(TAG, "Dock event received: " + dockState);
-                        if (dockState == -1 || dockState == 0) {
-                            enableConfigView(true);
-                            if (swcEnabled){
-                                bitrateList.setEnabled(false);
-                            }
-                            canOpened = false;
-                            rootView.findViewById(R.id.CanbusFragment).setVisibility(View.INVISIBLE);
-                            rootView.findViewById(R.id.disabledCan).setVisibility(View.VISIBLE);
-                        } else {
-                            rootView.findViewById(R.id.CanbusFragment).setVisibility(View.VISIBLE);
-                            rootView.findViewById(R.id.disabledCan).setVisibility(View.INVISIBLE);
-
-                        }
-                        break;
+    public void updateCanbus() {
+        if (MainActivity.devType == MainActivity.SMARTTAB_STAND_ALONE || MainActivity.devType == MainActivity.SMARTTAB_CRADLE_BASIC
+            || MainActivity.devType == MainActivity.SMARTCAM_BASIC) {
+            if (dockState == -1 || dockState == 0) {
+                enableConfigView(!canOpened);
+                if (swcEnabled) {
+                    bitrateList.setEnabled(false);
                 }
+                canOpened = false;
+                rootView.findViewById(R.id.CanbusFragment).setVisibility(View.INVISIBLE);
+                rootView.findViewById(R.id.disabledCan).setVisibility(View.VISIBLE);
+            } else {
+                rootView.findViewById(R.id.CanbusFragment).setVisibility(View.VISIBLE);
+                rootView.findViewById(R.id.disabledCan).setVisibility(View.INVISIBLE);
             }
-
-
         }
-    };
+    }
 }

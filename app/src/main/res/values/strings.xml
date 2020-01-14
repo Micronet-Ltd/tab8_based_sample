@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Tab8 Sample App</string>
+    <string name="app_name">Sample App</string>
 
     <string name="ADCs">ADC voltages</string>
     <string name="hello_blank_fragment">helloBlank</string>
@@ -13,6 +13,7 @@
     <string name="ignition_unknown_state_text">Ignition Unknown</string>
     <string name="ignition_state">Ignition State: </string>
     <string name="cradle_state">Cradle State: </string>
+    <string name="dev_type">Device Type: </string>
     <string name="refresh">Refresh</string>
 
     <string name="close_interface">Close Interface</string>

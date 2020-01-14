@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -16,6 +17,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Switch;
@@ -49,11 +51,11 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
     Switch out2;
     Switch out3;
 
-    private CameraManager camManager;
+    boolean isRedChecked = false;
+    boolean isGreenChecked = false;
+    boolean isBlueChecked = false;
 
-//    Class SystemProperties;
-//    Method getProp = null;
-//    String boardType;
+    private CameraManager camManager;
 
     public InputsOutputsLedsFragment() {
         // Required empty public constructor
@@ -94,15 +96,6 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
         out3.setOnCheckedChangeListener(this);
         updateOutputState();
 
-//        getProp();
-//        try {
-//            boardType = getProp.invoke(SystemProperties, new Object[]{"persist.vendor.board.config"}).toString();
-//        } catch (IllegalAccessException e) {
-//            e.printStackTrace();
-//        } catch (InvocationTargetException e) {
-//            e.printStackTrace();
-//        }
-
         //Lights
         Switch switchFlashLightButton = rootView.findViewById(R.id.switchFlashLight);
         switchFlashLightButton.setChecked(false);
@@ -110,31 +103,24 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
         Switch switchMcuLightButton = rootView.findViewById(R.id.switchMcuLight);
         switchMcuLightButton.setChecked(false);
         switchMcuLightButton.setOnCheckedChangeListener(this);
-        Switch switchNotificationLightButton = rootView.findViewById(R.id.switchNotificationLight);
-        switchNotificationLightButton.setChecked(false);
-        switchNotificationLightButton.setOnCheckedChangeListener(this);
         Switch switchIRLightButton = rootView.findViewById(R.id.switchIRLight);
         switchIRLightButton.setChecked(false);
         switchIRLightButton.setOnCheckedChangeListener(this);
-
+        CheckBox red = rootView.findViewById(R.id.checkbox_red);
+        CheckBox green = rootView.findViewById(R.id.checkbox_green);
+        CheckBox blue = rootView.findViewById(R.id.checkbox_blue);
+        red.setChecked(false);
+        green.setChecked(false);
+        blue.setChecked(false);
+        red.setOnCheckedChangeListener(this);
+        green.setOnCheckedChangeListener(this);
+        blue.setOnCheckedChangeListener(this);
+        setNotificationLight(isRedChecked, isGreenChecked, isBlueChecked);
+        if (Build.MODEL.equals("MSTab8")){
+            MainActivity.setViewAndChildrenEnabled(rootView.findViewById(R.id.mcuLayout),false);
+        }
         return rootView;
     }
-
-//    public void getProp(){
-//        try {
-//
-//            @SuppressWarnings("rawtypes")
-//            Class sp = Class.forName("android.os.SystemProperties");
-//            SystemProperties = sp;
-//            getProp = SystemProperties.getMethod("get", new Class[]{String.class});
-//
-//        } catch (IllegalArgumentException iAE) {
-//            throw iAE;
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//    }
 
     @Override
     public void onResume() {
@@ -156,8 +142,9 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
     }
 
     public void updateCradleIgnState() {
-        String cradleStateMsg, ignitionStateMsg;
+        String cradleStateMsg, ignitionStateMsg, devTypeMsg;
 
+        devTypeMsg = MainActivity.getDevTypeMessage(MainActivity.getDeviceType());
         switch (MainActivity.dockState) {
             case Intent.EXTRA_DOCK_STATE_UNDOCKED:
                 cradleStateMsg = getString(R.string.not_in_cradle_state_text);
@@ -182,8 +169,10 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
 
         TextView cradleStateTextview = rootView.findViewById(R.id.textViewCradleState1);
         TextView ignitionStateTextview = rootView.findViewById(R.id.textViewIgnitionState1);
+        TextView devTypeTextView = rootView.findViewById(R.id.textViewDevType);
         cradleStateTextview.setText(cradleStateMsg);
         ignitionStateTextview.setText(ignitionStateMsg);
+        devTypeTextView.setText(devTypeMsg);
     }
 
     /**
@@ -255,7 +244,8 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
     }
 
     public void updateInputValues() {
-        if (MainActivity.devType == MainActivity.SMARTTAB_STAND_ALONE) {
+        if (MainActivity.devType == MainActivity.SMARTTAB_STAND_ALONE || MainActivity.devType == MainActivity.SMARTTAB_CRADLE_BASIC
+            || MainActivity.devType == MainActivity.SMARTCAM_BASIC) {
             rootView.findViewById(R.id.inputsView).setVisibility(View.INVISIBLE);
             rootView.findViewById(R.id.inputsUnavaliable).setVisibility(View.VISIBLE);
         } else {
@@ -263,8 +253,7 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
             rootView.findViewById(R.id.inputsView).setVisibility(View.VISIBLE);
             input0.setText(((getInput(0) == 0) ? "OFF (" : "ON (") + getInput(0) + ")");
             input1.setText(((getInput(1) == 0) ? "OFF (" : "ON (") + getInput(1) + ")");
-            if (MainActivity.devType != MainActivity.SMARTCAM_BASIC
-                && MainActivity.devType != MainActivity.SMARTCAM_ENHANCED) { //todo check number of inputs for smartcam enhanced
+            if (MainActivity.devType != MainActivity.SMARTCAM_ENHANCED) {
                 input2.setText(((getInput(2) == 0) ? "OFF (" : "ON (") + getInput(2) + ")");
                 input3.setText(((getInput(3) == 0) ? "OFF (" : "ON (") + getInput(3) + ")");
                 input4.setText(((getInput(4) == 0) ? "OFF (" : "ON (") + getInput(4) + ")");
@@ -284,7 +273,8 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
     }
 
     public void updateOutputState() {
-        if (MainActivity.devType == MainActivity.SMARTTAB_STAND_ALONE) {
+        if (MainActivity.devType == MainActivity.SMARTTAB_STAND_ALONE || MainActivity.devType == MainActivity.SMARTTAB_CRADLE_BASIC
+            || MainActivity.devType == MainActivity.SMARTCAM_BASIC) {
             rootView.findViewById(R.id.outputsView).setVisibility(View.INVISIBLE);
             rootView.findViewById(R.id.outputsUnavaliable).setVisibility(View.VISIBLE);
         } else {
@@ -297,8 +287,7 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
             if (outputValueList.length >= 2) {
                 out1.setChecked((outputValueList[1] == 1) ? true : false);
             }
-            if (MainActivity.devType != MainActivity.SMARTCAM_BASIC
-                && MainActivity.devType != MainActivity.SMARTCAM_ENHANCED) { //todo check for smartcam
+            if (MainActivity.devType != MainActivity.SMARTCAM_ENHANCED) {
                 if (outputValueList.length >= 3) {
                     out2.setChecked((outputValueList[2] == 1) ? true : false);
                 }
@@ -395,22 +384,24 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
             case R.id.switchMcuLight:
                 setMcuLight(isChecked);
                 break;
-            case R.id.switchNotificationLight:
-                if (isChecked) {
-
-                    setNotificationLed(0xffffffff);
-                    //setNotificationRedLed(0xffffffff);
-                    //
-                } else {
-                    setNotificationLed(0x00000000);
-                }
-                break;
             case R.id.switchIRLight:
                 if (isChecked) {
-                    setIRLed(true);
+                    setLight(0xFFFFFFFF, "LIGHT_ID_BACKLIGHT");
                 } else {
-                    setIRLed(false);
+                    setLight(0x80808080, "LIGHT_ID_BACKLIGHT");
                 }
+                break;
+            case R.id.checkbox_red:
+                isRedChecked = isChecked;
+                setNotificationLight(isRedChecked, isGreenChecked, isBlueChecked);
+                break;
+            case R.id.checkbox_green:
+                isGreenChecked = isChecked;
+                setNotificationLight(isRedChecked, isGreenChecked, isBlueChecked);
+                break;
+            case R.id.checkbox_blue:
+                isBlueChecked = isChecked;
+                setNotificationLight(isRedChecked, isGreenChecked, isBlueChecked);
                 break;
         }
     }
@@ -436,135 +427,28 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
         } else {
             color = 0xFF000000;
         }
-        setMcuLed(color);
+        setLight(color, "LIGHT_ID_KEYBOARD");
     }
 
-    public void setMcuLed(int color) {
+    public void setNotificationLight(boolean isRedChecked, boolean isGreenChecked, boolean isBlueChecked) {
+        int lightColor = (0xFF << 24)  | ((isRedChecked?0xFF:0x00) << 16) | ((isGreenChecked?0xFF:0x00) << 8) | (isBlueChecked?0xFF:0x00);
+        setLight(lightColor,"LIGHT_ID_BATTERY");
+        setLight(lightColor, "LIGHT_ID_NOTIFICATIONS");
+    }
+
+    public void setLight(int color, String id) {
         try {
             @SuppressWarnings("rawtypes")
 
             Class<?> LightsManager = Class.forName("com.android.server.lights.LightsManager");
             Class<?> Light = Class.forName("com.android.server.lights.Light");
-            Field lightId = LightsManager.getField("LIGHT_ID_KEYBOARD");
-            Constructor<?> constructor = LightsManager.getConstructor(Context.class);
-            Object lightsManagerInstance = constructor.newInstance(getContext());
-            Method getLight = LightsManager.getMethod("getLight", int.class);
-            Method setBrightness = Light.getMethod("setBrightness", int.class);
-            Object lightInstance = getLight.invoke(lightsManagerInstance, lightId.get(lightsManagerInstance));
-            setBrightness.invoke(lightInstance, color);
-
-        } catch (IllegalArgumentException iAE) {
-            throw iAE;
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (java.lang.InstantiationException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public String getCradleType(int dockValue) {
-        String res = "Basic";
-        String temp = Integer.toBinaryString(dockValue);
-        if ((temp.length() >= 3) && (temp.charAt(temp.length() - 3) == '1')) {
-            res = "Enhanced";
-        }
-        return res;
-    }
-
-    public void setNotificationLed(int color) {
-        try {
-            @SuppressWarnings("rawtypes")
-
-            Class<?> LightsManager = Class.forName("com.android.server.lights.LightsManager");
-            Class<?> Light = Class.forName("com.android.server.lights.Light");
-            Field lightId = LightsManager.getField("LIGHT_ID_NOTIFICATIONS"); ///ADD _BATTERY
+            Field lightId = LightsManager.getField(id);
             Constructor<?> constructor = LightsManager.getConstructor(Context.class);
             Object lightsManagerInstance = constructor.newInstance(getContext());
             Method getLight = LightsManager.getMethod("getLight", int.class);
             Method setColor = Light.getMethod("setColor", int.class);
             Object lightInstance = getLight.invoke(lightsManagerInstance, lightId.get(lightsManagerInstance));
             setColor.invoke(lightInstance, color);
-
-//            Method setBrightness = Light.getMethod("setFlashing", int.class, int.class, int.class, int.class);
-//            Object lightInstance = getLight.invoke(lightsManagerInstance, lightId.get(lightsManagerInstance));
-//            setBrightness.invoke(lightInstance, color, 2, 100, 200);
-
-        } catch (IllegalArgumentException iAE) {
-            throw iAE;
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (java.lang.InstantiationException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        }
-    }
-
-    //Marina - added red led notification
-    public void setNotificationRedLed(int color) {
-        try {
-            @SuppressWarnings("rawtypes")
-
-            Class<?> LightsManager = Class.forName("com.android.server.lights.LightsManager");
-            Class<?> Light = Class.forName("com.android.server.lights.Light");
-            Field lightId = LightsManager.getField("LIGHT_ID_BATTERY"); ///ADD _BATTERY
-
-            Constructor<?> constructor = LightsManager.getConstructor(Context.class);
-            Object lightsManagerInstance = constructor.newInstance(getContext());
-            Method getLight = LightsManager.getMethod("getLight", int.class);
-            Method setColor = Light.getMethod("setColor", int.class);
-            Object lightInstance = getLight.invoke(lightsManagerInstance, lightId.get(lightsManagerInstance));
-            setColor.invoke(lightInstance, color);
-
-//            Method setBrightness = Light.getMethod("setFlashing", int.class, int.class, int.class, int.class);
-//            Object lightInstance = getLight.invoke(lightsManagerInstance, lightId.get(lightsManagerInstance));
-//            setBrightness.invoke(lightInstance, color, 2, 100, 200);
-
-        } catch (IllegalArgumentException iAE) {
-            throw iAE;
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (java.lang.InstantiationException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void setIRLed(boolean on) {
-        try {
-            @SuppressWarnings("rawtypes")
-
-            Class<?> LightsManager = Class.forName("com.android.server.lights.LightsManager");
-            Class<?> Light = Class.forName("com.android.server.lights.Light");
-            Field lightId = LightsManager.getField("LIGHT_ID_BACKLIGHT");
-            Constructor<?> constructor = LightsManager.getConstructor(Context.class);
-            Object lightsManagerInstance = constructor.newInstance(getContext());
-            Method getLight = LightsManager.getMethod("getLight", int.class);
-            Method setIRLed = Light.getMethod("setIRLed", boolean.class);
-            Object lightInstance = getLight.invoke(lightsManagerInstance, lightId.get(lightsManagerInstance));
-            setIRLed.invoke(lightInstance, on);
-
         } catch (IllegalArgumentException iAE) {
             throw iAE;
         } catch (ClassNotFoundException e) {
