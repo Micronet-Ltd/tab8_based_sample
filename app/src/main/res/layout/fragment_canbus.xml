@@ -1,0 +1,378 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:id="@+id/frameLayout"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:background="@android:color/background_light"
+  tools:context=".fragments.InputsOutputsLedsFragment">
+
+
+  <LinearLayout
+    android:id="@+id/CanbusFragment"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:weightSum="7">
+
+
+    <LinearLayout
+      android:id="@+id/config"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_weight="4"
+      android:orientation="horizontal"
+      android:weightSum="2">
+
+      <LinearLayout
+        android:id="@+id/canConfiguration"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@drawable/border"
+        android:orientation="vertical">
+        <RadioGroup
+          android:id="@+id/swcGroup"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_centerHorizontal="true"
+          android:orientation="horizontal"
+          android:layout_marginLeft="10dp">
+
+          <RadioButton
+            android:id="@+id/regular"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="regular CAN"
+            android:textSize="10sp"/>
+
+          <RadioButton
+            android:id="@+id/SWC"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="SWC"
+            android:textSize="10sp"/>
+
+        </RadioGroup>
+
+        <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="5dp"
+          android:layout_marginLeft="20dp"
+          android:layout_marginRight="20dp"
+          android:text="Canbus configurations:"
+          android:textColor="@color/colorPrimaryDark"
+          android:textSize="13sp"
+          />
+
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal">
+          <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:text="select port:"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="13sp"
+            />
+
+          <Spinner
+            android:id="@+id/canList"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"/>
+        </LinearLayout>
+
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal">
+          <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:text="select bitrate:"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="13sp"
+            />
+
+          <Spinner
+            android:id="@+id/bitrateList"
+            android:layout_width="124dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginEnd="10dp"/>
+        </LinearLayout>
+
+        <RadioGroup
+          android:id="@+id/terminationGroup"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:layout_marginLeft="10dp">
+
+          <RadioButton
+            android:id="@+id/termOn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Enable \nTermination"
+            android:textSize="10sp"/>
+
+          <RadioButton
+            android:id="@+id/termOff"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Disable \nTermination"
+            android:textSize="10sp"/>
+
+        </RadioGroup>
+
+        <RadioGroup
+          android:id="@+id/listenerModeGroup"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:layout_marginLeft="10dp">
+
+          <RadioButton
+            android:id="@+id/lisModeOff"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:text="Listener \nmode OFF"
+            android:textSize="10sp"/>
+
+          <RadioButton
+            android:id="@+id/lisModeOn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Listener \nmode ON"
+            android:textSize="10sp"/>
+
+        </RadioGroup>
+
+        <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:orientation="horizontal"
+          android:layout_marginLeft="10dp">
+
+          <Button
+            android:id="@+id/openCan"
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:text="Open"
+            android:textSize="13sp"
+            android:textAllCaps="false"/>
+
+          <Button
+            android:id="@+id/closeCan"
+            android:layout_width="60dp"
+            android:layout_height="40dp"
+            android:text="Close"
+            android:textSize="13sp"
+            android:textAllCaps="false"/>
+        </LinearLayout>
+
+      </LinearLayout>
+
+      <LinearLayout
+        android:id="@+id/maskConfiguration"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="2"
+        android:background="@drawable/border"
+        android:orientation="vertical">
+
+        <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="5dp"
+          android:layout_marginLeft="20dp"
+          android:layout_marginRight="20dp"
+          android:text="enter up to 24 filter IDs"
+          android:textColor="@color/colorPrimaryDark"
+          android:textSize="13sp"
+          />
+        <EditText
+          android:id="@+id/ids"
+          android:layout_width="250dp"
+          android:layout_height="wrap_content"
+          android:layout_marginEnd="5dp"
+          android:layout_marginTop="5dp"
+          android:layout_marginStart="20dp"
+          android:textSize="13sp"
+          android:maxLines="1"
+          android:inputType="text"
+          android:imeOptions="actionDone"
+          />
+
+        <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="5dp"
+          android:layout_marginLeft="20dp"
+          android:layout_marginRight="20dp"
+          android:text="enter up to 24 filter mask types"
+          android:textColor="@color/colorPrimaryDark"
+          android:textSize="13sp"
+          />
+
+        <EditText
+          android:id="@+id/types"
+          android:layout_width="250dp"
+          android:layout_height="wrap_content"
+          android:layout_marginEnd="5dp"
+          android:layout_marginTop="5dp"
+          android:layout_marginStart="20dp"
+          android:textSize="13sp"
+          android:maxLines="1"
+          android:inputType="text"
+          android:imeOptions="actionDone"
+          />
+
+        <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="5dp"
+          android:layout_marginLeft="20dp"
+          android:layout_marginRight="20dp"
+          android:text="enter up to 16 filter masks"
+          android:textColor="@color/colorPrimaryDark"
+          android:textSize="13sp"
+          />
+        <EditText
+          android:id="@+id/masks"
+          android:layout_width="250dp"
+          android:layout_height="wrap_content"
+          android:layout_marginEnd="5dp"
+          android:layout_marginTop="5dp"
+          android:layout_marginStart="20dp"
+          android:textSize="13sp"
+          android:maxLines="1"
+          android:inputType="text"
+          android:imeOptions="actionDone"
+          />
+
+      </LinearLayout>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+      android:id="@+id/dataConfiguration"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_weight="3"
+      android:orientation="horizontal"
+      android:weightSum="2">
+
+      <LinearLayout
+        android:id="@+id/sendDataLayout"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@drawable/border"
+        android:orientation="vertical">
+
+        <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="10dp"
+          android:layout_marginLeft="20dp"
+          android:text="enter data:"
+          android:textColor="@color/colorPrimaryDark"
+          android:textSize="13sp"
+          />
+        <EditText
+          android:id="@+id/dataToSend"
+          android:layout_width="150dp"
+          android:layout_height="wrap_content"
+          android:layout_marginEnd="5dp"
+          android:layout_marginTop="5dp"
+          android:layout_marginStart="20dp"
+          android:textSize="13sp"
+          android:maxLines="1"
+          android:inputType="text"
+          android:imeOptions="actionDone"
+          />
+
+        <Button
+          android:id="@+id/sendData"
+          android:layout_width="60dp"
+          android:layout_height="40dp"
+          android:layout_marginLeft="20dp"
+          android:text="Send"
+          android:textSize="13sp"
+          android:textAllCaps="false"/>
+
+      </LinearLayout>
+
+      <LinearLayout
+        android:id="@+id/receiveData"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="@drawable/border"
+        android:orientation="vertical">
+
+        <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="10dp"
+          android:layout_marginLeft="20dp"
+          android:text="received data:"
+          android:textColor="@color/colorPrimaryDark"
+          android:textSize="13sp"
+          />
+
+        <TextView
+          android:id="@+id/receivedData"
+          android:layout_width="150dp"
+          android:layout_height="wrap_content"
+          android:layout_marginLeft="20dp"
+          android:layout_marginTop="10dp"
+          android:maxLines="2"
+          android:text=""
+          android:textColor="@color/colorPrimaryDark"
+          android:textSize="13sp"/>
+
+        <Button
+          android:id="@+id/clearData"
+          android:layout_width="60dp"
+          android:layout_height="40dp"
+          android:layout_marginTop="10dp"
+          android:layout_marginLeft="20dp"
+          android:text="Clear"
+          android:textSize="13sp"
+          android:textAllCaps="false"/>
+
+      </LinearLayout>
+
+    </LinearLayout>
+
+  </LinearLayout>
+
+  <TextView
+    android:id="@+id/disabledCan"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:text="Canbus Unaliable"
+    android:layout_gravity="center"
+    android:layout_centerHorizontal="true"
+    android:layout_marginTop="150dp"
+    android:layout_marginStart="400dp"/>
+
+</RelativeLayout>
