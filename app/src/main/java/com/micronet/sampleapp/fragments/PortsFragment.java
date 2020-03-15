@@ -2,6 +2,7 @@ package com.micronet.sampleapp.fragments;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -31,6 +32,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -55,10 +57,11 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
     public static MainActivity mainActivity;
 
     String[] RSPortList = {"/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyUSB2", "/dev/ttyUSB3"};
+    String[] RSPortListCamEnh = {"/dev/ttyMICRONET_ACCEL"};
     String[] RSPortListBasicCradle = {"/dev/ttyHS0"};
     String[] baudrateList = {"300", "600", "1200", "1800", "2400", "4800", "9600", "19200", "38400", "57600", "115200"};
     String[] actionsList = {"turn on flash", "turn off flash"};
-//    String j1708Port = "/dev/ttyMICRONET_J1708";
+    //String j1708Port = "/dev/ttyMICRONET_J1708";
     String j1708Port = "/dev/j1708";
     RadioGroup jGroup;
     Spinner serialPortRS232;
@@ -75,7 +78,7 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
     Button sendDataJ1708;
     Button clearDataJ1708;
 
-    String selectedPort = (MainActivity.devType == MainActivity.SMARTTAB_CRADLE_ENHANCED || MainActivity.devType == MainActivity.SMARTCAM_ENHANCED)?RSPortList[0]:RSPortListBasicCradle[0];
+    String selectedPort = getRsPort()[0];
     String selectedBaudrate = baudrateList[0];
     ArrayAdapter serialPortAdapterRS232;
     EditText waitTime;
@@ -94,6 +97,14 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
     }
 
     @Override
+    public void onStop() {
+        closeSerialPort();
+        closeSerialPortJ1708();
+        super.onStop();
+        Log.d(TAG, "onStop");
+    }
+
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_ports, container, false);
@@ -106,7 +117,7 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
         // settings for RS232
         serialPortRS232 = rootView.findViewById(R.id.SerialPortListRS232);
         serialPortRS232.setOnItemSelectedListener(this);
-        serialPortAdapterRS232 = new ArrayAdapter(getActivity(), R.layout.spinner_item, (MainActivity.devType == MainActivity.SMARTTAB_CRADLE_ENHANCED || MainActivity.devType == MainActivity.SMARTCAM_ENHANCED)?RSPortList:RSPortListBasicCradle);
+        serialPortAdapterRS232 = new ArrayAdapter(getActivity(), R.layout.spinner_item, getRsPort());
         serialPortRS232.setAdapter(serialPortAdapterRS232);
 
         baudrateRS232 = rootView.findViewById(R.id.baudrateListRS232);
@@ -128,7 +139,7 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
         ArrayAdapter actionsAdapter = new ArrayAdapter(getActivity(), R.layout.spinner_item, actionsList);
         actions.setAdapter(actionsAdapter);
         TextView text = rootView.findViewById(R.id.textForCustomButton);
-        if (Build.MODEL.equals("MSTab8")){
+        if (MainActivity.getBoardType() < 2) {
             text.setText("select action for custom button \\n (F1 - first from the left");
         } else {
             text.setText("select action for custom button");
@@ -142,13 +153,12 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
                 if (checkedId == R.id.j1708En) {
                     enablePort("j", true);
                     MainActivity.setViewAndChildrenEnabled(rootView.findViewById(R.id.J1708), true);
-                    // if (mSerialPortJ1708 == null) {
                     openSerialPortJ1708();
-                    //}
-                    //  if (mReadThreadJ1708.isInterrupted()) {
-                    mReadThreadJ1708 = new ReadThreadJ1708();
-                    mReadThreadJ1708.start();
-                    // }
+                    if (mSerialPortJ1708 != null) {
+
+                        mReadThreadJ1708 = new ReadThreadJ1708();
+                        mReadThreadJ1708.start();
+                    }
 
                 } else {
                     clearData();
@@ -176,7 +186,7 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
         return rootView;
     }
 
-    public void updatePorts(){
+    public void updatePorts() {
         if (MainActivity.devType == MainActivity.SMARTTAB_STAND_ALONE) {
             closeSerialPort();
             closeSerialPortJ1708();
@@ -188,18 +198,20 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
             rootView.findViewById(R.id.RS232).setVisibility(View.VISIBLE);
             rootView.findViewById(R.id.rs232Disabled).setVisibility(View.INVISIBLE);
             if (rs232Enabled) {
-                serialPortAdapterRS232 = new ArrayAdapter(getActivity(), R.layout.spinner_item, (MainActivity.devType == MainActivity.SMARTTAB_CRADLE_ENHANCED || MainActivity.devType == MainActivity.SMARTCAM_ENHANCED)?RSPortList:RSPortListBasicCradle);
+                serialPortAdapterRS232 = new ArrayAdapter(getActivity(), R.layout.spinner_item, getRsPort());
                 serialPortRS232.setAdapter(serialPortAdapterRS232);
-                selectedPort = (MainActivity.devType == MainActivity.SMARTTAB_CRADLE_ENHANCED || MainActivity.devType == MainActivity.SMARTCAM_ENHANCED)?RSPortList[0]:RSPortListBasicCradle[0];
+                selectedPort = getRsPort()[0];
                 selectedBaudrate = baudrateList[0];
             }
             if (mSerialPort == null) {
                 openSerialPort(selectedPort);
-                mSerialPort.config(Integer.parseInt(selectedBaudrate));
-                mReadThread = new ReadThread();
-                mReadThread.start();
+                if (mSerialPort != null) {
+                    mSerialPort.config(Integer.parseInt(selectedBaudrate));
+                    mReadThread = new ReadThread();
+                    mReadThread.start();
+                }
             }
-            if (MainActivity.devType == MainActivity.SMARTCAM_BASIC || MainActivity.devType == MainActivity.SMARTTAB_CRADLE_BASIC){
+            if (MainActivity.devType == MainActivity.SMARTCAM_BASIC || MainActivity.devType == MainActivity.SMARTTAB_CRADLE_BASIC) {
                 rootView.findViewById(R.id.J1708).setVisibility(View.INVISIBLE);
                 rootView.findViewById(R.id.j1708Disabled).setVisibility(View.VISIBLE);
             } else {
@@ -208,8 +220,10 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
             }
             if (mSerialPortJ1708 == null) {
                 openSerialPortJ1708();
-                mReadThreadJ1708 = new ReadThreadJ1708();
-                mReadThreadJ1708.start();
+                if (mSerialPortJ1708 != null) {
+                    mReadThreadJ1708 = new ReadThreadJ1708();
+                    mReadThreadJ1708.start();
+                }
             }
         }
     }
@@ -264,18 +278,18 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
     }
 
     public void startAlarm() {
-            Log.d(TAG, "Set Alarm");
-            if (TextUtils.isEmpty(waitTime.getText().toString())) {
-                Toast.makeText(getContext(), "Enter number of minutes", Toast.LENGTH_LONG).show();
-            } else {
-                waitingTimeInMinutes = waitTime.getText().toString();
-                long waitMillisec = Integer.parseInt(waitingTimeInMinutes) * 60 * 1000;
-                AlarmManager alarmManager = (AlarmManager) getContext().getSystemService(getContext().ALARM_SERVICE);
-                Intent intent = new Intent(getContext(), AlarmReceiver.class);
-                PendingIntent pendingIntent = PendingIntent.getBroadcast(getContext(), REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-                //alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + waitMillisec, pendingIntent);
-                alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(System.currentTimeMillis() + waitMillisec, pendingIntent), pendingIntent);
-            }
+        Log.d(TAG, "Set Alarm");
+        if (TextUtils.isEmpty(waitTime.getText().toString())) {
+            Toast.makeText(getContext(), "Enter number of minutes", Toast.LENGTH_LONG).show();
+        } else {
+            waitingTimeInMinutes = waitTime.getText().toString();
+            long waitMillisec = Integer.parseInt(waitingTimeInMinutes) * 60 * 1000;
+            AlarmManager alarmManager = (AlarmManager) getContext().getSystemService(getContext().ALARM_SERVICE);
+            Intent intent = new Intent(getContext(), AlarmReceiver.class);
+            PendingIntent pendingIntent = PendingIntent.getBroadcast(getContext(), REQUEST_CODE, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            //alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + waitMillisec, pendingIntent);
+            alarmManager.setAlarmClock(new AlarmManager.AlarmClockInfo(System.currentTimeMillis() + waitMillisec, pendingIntent), pendingIntent);
+        }
     }
 
     @Override
@@ -287,17 +301,20 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
                     closeSerialPort();
                 }
                 openSerialPort(selectedPort);
-                mSerialPort.config(Integer.parseInt(selectedBaudrate));
-                mReadThread = new ReadThread();
-                mReadThread.start();
+                if (mSerialPort != null) {
+                    mSerialPort.config(Integer.parseInt(selectedBaudrate));
+                    mReadThread = new ReadThread();
+                    mReadThread.start();
+                }
             }
         } else if (parent.getId() == R.id.baudrateListRS232) {
             selectedBaudrate = parent.getItemAtPosition(position).toString();
             if (MainActivity.dockState > 0) {
-                mSerialPort.config(Integer.parseInt(selectedBaudrate));
+                if (mSerialPort != null) {
+                    mSerialPort.config(Integer.parseInt(selectedBaudrate));
+                }
             }
-        }
-        else if (parent.getId() == R.id.customButtonActions){
+        } else if (parent.getId() == R.id.customButtonActions) {
             mainActivity.actionId = position;
         }
     }
@@ -354,35 +371,34 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
     }
 
     public void onDataReceivedJ1708(byte[] buffer, int size) {
-            receivedDataValueJ1708 = "";
-            int len = Integer.parseInt(Integer.toHexString(buffer[0] & 0xFF), 16);
-                for (int i = 1; i <= len; i++) {
-                    if (Integer.toHexString(buffer[i]).length() < 2) {
-                        receivedDataValueJ1708 = receivedDataValueJ1708 + "0" + Integer.toHexString(buffer[i]);
-                    } else {
-                        receivedDataValueJ1708 = receivedDataValueJ1708 + Integer.toHexString(buffer[i] & 0xFF);
-                    }
-                }
+        receivedDataValueJ1708 = "";
+        int len = Integer.parseInt(Integer.toHexString(buffer[0] & 0xFF), 16);
+        for (int i = 1; i <= len; i++) {
+            if (Integer.toHexString(buffer[i]).length() < 2) {
+                receivedDataValueJ1708 = receivedDataValueJ1708 + "0" + Integer.toHexString(buffer[i]);
+            } else {
+                receivedDataValueJ1708 = receivedDataValueJ1708 + Integer.toHexString(buffer[i] & 0xFF);
+            }
+        }
 
-            allReceivedDataJ1708 = allReceivedDataJ1708 + receivedDataValueJ1708;
+        allReceivedDataJ1708 = allReceivedDataJ1708 + receivedDataValueJ1708;
 
+        mainActivity.runOnUiThread(new Runnable() {
 
-            mainActivity.runOnUiThread(new Runnable() {
-
-                @Override
-                public void run() {
-                    receivedDataJ1708.setText(allReceivedDataJ1708);
-                }
-            });
+            @Override
+            public void run() {
+                receivedDataJ1708.setText(allReceivedDataJ1708);
+            }
+        });
     }
 
     public void openSerialPort(String path) {
         try {
-
             mSerialPort = new SerialPort(new File(path), 0);
             mOutputStream = mSerialPort.getOutputStream();
             mInputStream = mSerialPort.getInputStream();
         } catch (IOException e) {
+            mSerialPort = null;
             e.printStackTrace();
         }
     }
@@ -394,6 +410,7 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
             mOutputStreamj1708 = mSerialPortJ1708.getOutputStream();
             mInputStreamj1708 = mSerialPortJ1708.getInputStream();
         } catch (IOException e) {
+            mSerialPortJ1708 = null;
             e.printStackTrace();
         }
     }
@@ -521,5 +538,13 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
 
             }
         }
+    }
+
+    private String[] getRsPort(){
+        if (MainActivity.devType == MainActivity.SMARTCAM_BASIC)
+            return RSPortListBasicCradle;
+        else if (MainActivity.devType == MainActivity.SMARTCAM_ENHANCED)
+            return RSPortListCamEnh;
+        else return RSPortList;
     }
 }
