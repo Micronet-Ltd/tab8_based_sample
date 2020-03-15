@@ -133,7 +133,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         Log.d("AAAAAAAA key", "keycode: " + keyCode);
-        if ((keyCode == KeyEvent.KEYCODE_F1 && Build.MODEL.equals("MSTab8")) || (keyCode == KeyEvent.KEYCODE_WINDOW && Build.MODEL.equals("MSCAM"))) {
+        if ((keyCode == KeyEvent.KEYCODE_F1 && MainActivity.getBoardType() < 2) || (keyCode == KeyEvent.KEYCODE_WINDOW && MainActivity.getBoardType() >= 2)) {
             event.startTracking();
             return true;
         } else {
@@ -143,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if ((keyCode == KeyEvent.KEYCODE_F1 && Build.MODEL.equals("MSTab8")) || (keyCode == KeyEvent.KEYCODE_WINDOW && Build.MODEL.equals("MSCAM"))) {
+        if ((keyCode == KeyEvent.KEYCODE_F1 && MainActivity.getBoardType() < 2) || (keyCode == KeyEvent.KEYCODE_WINDOW && MainActivity.getBoardType() >= 2)) {
             if (event.isTracking() && !event.isCanceled()) {
                 switch (actionId) {
                     case 0:
@@ -277,8 +277,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public static int getBoardType() {
-        int ret = 0;
-        ret = Integer.parseInt(getSystemProperty("hw.board.id"));
+        int ret;
+        String s = getSystemProperty("hw.board.id");
+        if (s == null || s.equals(""))
+            return 0;
+        ret = Integer.parseInt(s);
+        Log.d(TAG, "board id: " + ret);
         return ret;
     }
 
@@ -295,7 +299,7 @@ public class MainActivity extends AppCompatActivity {
                 return SMARTTAB_CRADLE_BASIC;
             case 2:
                 return SMARTCAM_BASIC;
-            case 3:
+            case 6:
                 return SMARTCAM_ENHANCED;
         }
         return -1;
