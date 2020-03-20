@@ -5,14 +5,18 @@
 
 package com.micronet.sampleapp.fragments;
 
+import android.Manifest;
+import android.Manifest.permission;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -64,6 +68,7 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        getPermissions();
         Log.d(TAG, "onCreate");
     }
 
@@ -116,8 +121,8 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
         green.setOnCheckedChangeListener(this);
         blue.setOnCheckedChangeListener(this);
         setNotificationLight(isRedChecked, isGreenChecked, isBlueChecked);
-        if (Build.MODEL.equals("MSTab8")){
-            MainActivity.setViewAndChildrenEnabled(rootView.findViewById(R.id.mcuLayout),false);
+        if (MainActivity.getBoardType() < 2) {
+            MainActivity.setViewAndChildrenEnabled(rootView.findViewById(R.id.mcuLayout), false);
         }
         return rootView;
     }
@@ -244,8 +249,7 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
     }
 
     public void updateInputValues() {
-        if (MainActivity.devType == MainActivity.SMARTTAB_STAND_ALONE || MainActivity.devType == MainActivity.SMARTTAB_CRADLE_BASIC
-            || MainActivity.devType == MainActivity.SMARTCAM_BASIC) {
+        if (MainActivity.devType == MainActivity.SMARTTAB_STAND_ALONE) {
             rootView.findViewById(R.id.inputsView).setVisibility(View.INVISIBLE);
             rootView.findViewById(R.id.inputsUnavaliable).setVisibility(View.VISIBLE);
         } else {
@@ -253,7 +257,7 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
             rootView.findViewById(R.id.inputsView).setVisibility(View.VISIBLE);
             input0.setText(((getInput(0) == 0) ? "OFF (" : "ON (") + getInput(0) + ")");
             input1.setText(((getInput(1) == 0) ? "OFF (" : "ON (") + getInput(1) + ")");
-            if (MainActivity.devType != MainActivity.SMARTCAM_ENHANCED) {
+            if (MainActivity.devType == MainActivity.SMARTTAB_CRADLE_ENHANCED) {
                 input2.setText(((getInput(2) == 0) ? "OFF (" : "ON (") + getInput(2) + ")");
                 input3.setText(((getInput(3) == 0) ? "OFF (" : "ON (") + getInput(3) + ")");
                 input4.setText(((getInput(4) == 0) ? "OFF (" : "ON (") + getInput(4) + ")");
@@ -273,8 +277,7 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
     }
 
     public void updateOutputState() {
-        if (MainActivity.devType == MainActivity.SMARTTAB_STAND_ALONE || MainActivity.devType == MainActivity.SMARTTAB_CRADLE_BASIC
-            || MainActivity.devType == MainActivity.SMARTCAM_BASIC) {
+        if (MainActivity.devType == MainActivity.SMARTTAB_STAND_ALONE) {
             rootView.findViewById(R.id.outputsView).setVisibility(View.INVISIBLE);
             rootView.findViewById(R.id.outputsUnavaliable).setVisibility(View.VISIBLE);
         } else {
@@ -287,7 +290,7 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
             if (outputValueList.length >= 2) {
                 out1.setChecked((outputValueList[1] == 1) ? true : false);
             }
-            if (MainActivity.devType != MainActivity.SMARTCAM_ENHANCED) {
+            if (MainActivity.devType == MainActivity.SMARTTAB_CRADLE_ENHANCED) {
                 if (outputValueList.length >= 3) {
                     out2.setChecked((outputValueList[2] == 1) ? true : false);
                 }
@@ -388,7 +391,11 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
                 if (isChecked) {
                     setLight(0xFFFFFFFF, "LIGHT_ID_BACKLIGHT");
                 } else {
-                    setLight(0x80808080, "LIGHT_ID_BACKLIGHT");
+                    if (MainActivity.devType == MainActivity.SMARTCAM_BASIC || MainActivity.devType == MainActivity.SMARTCAM_ENHANCED) {
+                        setLight(0x00000000, "LIGHT_ID_BACKLIGHT");
+                    } else {
+                        setLight(0x80808080, "LIGHT_ID_BACKLIGHT");
+                    }
                 }
                 break;
             case R.id.checkbox_red:
@@ -431,8 +438,8 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
     }
 
     public void setNotificationLight(boolean isRedChecked, boolean isGreenChecked, boolean isBlueChecked) {
-        int lightColor = (0xFF << 24)  | ((isRedChecked?0xFF:0x00) << 16) | ((isGreenChecked?0xFF:0x00) << 8) | (isBlueChecked?0xFF:0x00);
-        setLight(lightColor,"LIGHT_ID_BATTERY");
+        int lightColor = (0xFF << 24) | ((isRedChecked ? 0xFF : 0x00) << 16) | ((isGreenChecked ? 0xFF : 0x00) << 8) | (isBlueChecked ? 0xFF : 0x00);
+        setLight(lightColor, "LIGHT_ID_BATTERY");
         setLight(lightColor, "LIGHT_ID_NOTIFICATIONS");
     }
 
@@ -447,6 +454,7 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
             Object lightsManagerInstance = constructor.newInstance(getContext());
             Method getLight = LightsManager.getMethod("getLight", int.class);
             Method setColor = Light.getMethod("setColor", int.class);
+            setColor.setAccessible(true);
             Object lightInstance = getLight.invoke(lightsManagerInstance, lightId.get(lightsManagerInstance));
             setColor.invoke(lightInstance, color);
         } catch (IllegalArgumentException iAE) {
@@ -462,6 +470,31 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
         } catch (java.lang.InstantiationException e) {
             e.printStackTrace();
         } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void getPermissions() {
+        try {
+            @SuppressWarnings("rawtypes")
+
+            Class<?> PermissionsManager = Class.forName("com.android.server.permissions.PermissionsManager");
+            Constructor<?> constructor = PermissionsManager.getConstructor();
+            Object getPerms = constructor.newInstance();
+            Method getPermissions = PermissionsManager.getMethod("getPermissions",String.class , Context.class);
+            getPermissions.setAccessible(true);
+            getPermissions.invoke(getPerms, "com.micronet.sampleapp", getContext());
+        } catch (IllegalArgumentException iAE) {
+            throw iAE;
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        } catch (java.lang.InstantiationException e) {
             e.printStackTrace();
         }
     }
