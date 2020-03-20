@@ -4,6 +4,7 @@ This app show how to use Inputs, outputs, Lights, get all permissions (without a
 get cradle/ignition state, get info about device, override buttons action (one button on smartcam and two buttons on smarttab):
 
 1) function getPermissions()
+	You need to sign the app wwith platform key to get all permissions
 	call to this function to get all permissions that listed in manifest (include runtime permissions)
 
 2) function setLight(int color, String id) 
