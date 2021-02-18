@@ -66,6 +66,7 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
     boolean listenerMode = false;
     boolean canOpened = false;
     int dockState = -1;
+    int can_fd = -1;
     public static MainActivity mainActivity;
     String receivedDataValue = null;
     String allReceivedData = "";
@@ -94,6 +95,12 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         importClasses();
+    }
+
+    @Override
+    public void onPause() {
+        closeCanbus();
+        super.onPause();
     }
 
     @Override
@@ -324,9 +331,14 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
             canHardwareFilterInstanse = constructor.newInstance(tempIds, tempMask, tempType);
             Object filterArr = Array.newInstance(CanbusHardwareFilter, 1);
             Array.set(filterArr, 0, canHardwareFilterInstanse);
-            ret = (int) configureAndOpenCan.invoke(canServiceInstanse, listenerMode, currentBitrate, termination, filterArr, currentPort,
-                null);
+            if (can_fd == -1)
+                ret = (int) configureAndOpenCan.invoke(canServiceInstanse, listenerMode, currentBitrate, termination, filterArr, currentPort,
+                    null);
+            else
+                ret = can_fd;
+
             if (ret != -1) {
+                can_fd = ret;
                 canOpened = true;
                 enableConfigView(false);
                 mInputStream = new FileInputStream(canbusPortList[currentPort - 1]);
@@ -364,7 +376,11 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
                 if (swcEnabled) {
                     bitrateList.setEnabled(false);
                 }
+                //closeCanMethod(currentPort);
+                can_fd = -1;
             }
+            mInputStream = null;
+            mOutputStream = null;
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
