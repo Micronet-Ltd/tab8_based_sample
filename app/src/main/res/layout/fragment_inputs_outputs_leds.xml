@@ -1,509 +1,349 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-  xmlns:app="http://schemas.android.com/apk/res-auto"
-  xmlns:tools="http://schemas.android.com/tools"
-  android:id="@+id/frameLayout"
-  android:layout_width="match_parent"
-  android:layout_height="match_parent"
-  android:background="@android:color/background_light"
-  tools:context=".fragments.InputsOutputsLedsFragment">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/frameLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/background_light"
+    tools:context=".fragments.InputsOutputsLedsFragment">
 
 
   <LinearLayout
-    android:id="@+id/all"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:weightSum="2">
+      android:id="@+id/all"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:orientation="horizontal"
+      android:weightSum="2">
 
 
     <LinearLayout
-      android:id="@+id/cradleAndInputs"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:layout_weight="1"
-      android:orientation="vertical"
-      android:weightSum="4">
-
-      <LinearLayout
-        android:id="@+id/cradleState"
+        android:id="@+id/cradleAndInputs"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_weight="3"
-        android:background="@drawable/border"
-        android:orientation="vertical">
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:weightSum="4">
+
+      <LinearLayout
+          android:id="@+id/cradleState"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:layout_weight="3"
+          android:background="@drawable/border"
+          android:orientation="vertical">
         <LinearLayout
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:orientation="horizontal">
-
-          <TextView
-            android:id="@+id/lblCradleState"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
-            android:layout_marginStart="10dp"
-            android:ems="10"
-            android:text="@string/cradle_state"
-            android:textColor="@android:color/black"/>
+            android:orientation="horizontal">
 
           <TextView
-            android:id="@+id/textViewCradleState1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
-            android:text="@string/not_in_cradle_state_text"
-            android:textColor="@android:color/black"/>
+              android:id="@+id/lblCradleState"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="15dp"
+              android:layout_marginStart="10dp"
+              android:ems="10"
+              android:text="@string/cradle_state"
+              android:textColor="@android:color/black"/>
+
+          <TextView
+              android:id="@+id/textViewCradleState1"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="15dp"
+              android:text="@string/not_in_cradle_state_text"
+              android:textColor="@android:color/black"/>
         </LinearLayout>
 
         <LinearLayout
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:orientation="horizontal">
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
           <TextView
-            android:id="@+id/lblIIgnitionState"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_marginStart="10dp"
-            android:ems="10"
-            android:text="@string/ignition_state"
-            android:textColor="@android:color/black"
-            />
+              android:id="@+id/lblIIgnitionState"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="10dp"
+              android:layout_marginStart="10dp"
+              android:ems="10"
+              android:text="@string/ignition_state"
+              android:textColor="@android:color/black"
+              />
           <TextView
-            android:id="@+id/textViewIgnitionState1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:text="@string/ignition_off_state_text"
-            android:textColor="@android:color/black"
-            />
+              android:id="@+id/textViewIgnitionState1"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="10dp"
+              android:text="@string/ignition_off_state_text"
+              android:textColor="@android:color/black"
+              />
         </LinearLayout>
 
         <LinearLayout
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:orientation="horizontal">
-
-          <TextView
-            android:id="@+id/lblDeviceType"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
-            android:layout_marginStart="10dp"
-            android:ems="10"
-            android:text="@string/dev_type"
-            android:textColor="@android:color/black"/>
+            android:orientation="horizontal">
 
           <TextView
-            android:id="@+id/textViewDevType"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
-            android:text=""
-            android:textColor="@android:color/black"/>
+              android:id="@+id/lblDeviceType"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="15dp"
+              android:layout_marginStart="10dp"
+              android:ems="10"
+              android:text="@string/dev_type"
+              android:textColor="@android:color/black"/>
+
+          <TextView
+              android:id="@+id/textViewDevType"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="15dp"
+              android:text=""
+              android:textColor="@android:color/black"/>
         </LinearLayout>
 
       </LinearLayout>
 
       <LinearLayout
-        android:id="@+id/inputs"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="@drawable/border"
-        android:orientation="horizontal">
+          android:id="@+id/inputs"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:layout_weight="1"
+          android:background="@drawable/border"
+          android:orientation="horizontal">
 
         <RelativeLayout
-          android:layout_width="match_parent"
-          android:layout_height="match_parent">
-
-          <TextView
-            android:id="@+id/inputsUnavaliable"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="15dp"
-            android:layout_marginStart="40dp"
-            android:text="Inputs Unavaliable"/>
+            android:layout_height="match_parent">
 
           <LinearLayout
-            android:id="@+id/inputsView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
+              android:id="@+id/inputsView"
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="horizontal">
 
             <LinearLayout
-              android:id="@+id/inputIds"
-              android:layout_width="wrap_content"
-              android:layout_height="match_parent"
-              android:orientation="vertical">
+                android:id="@+id/inputIds"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
 
               <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginStart="10dp"
-                android:text="input 0:"
-                android:textColor="@android:color/black"/>
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_marginTop="5dp"
+                  android:layout_marginStart="10dp"
+                  android:text="input 0:"
+                  android:textColor="@android:color/black"/>
               <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginStart="10dp"
-                android:text="input 1:"
-                android:textColor="@android:color/black"/>
-              <TextView
-                android:id="@+id/in2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginStart="10dp"
-                android:text="input 2:"
-                android:textColor="@android:color/black"/>
-              <TextView
-                android:id="@+id/in3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginStart="10dp"
-                android:text="input 3:"
-                android:textColor="@android:color/black"/>
-              <TextView
-                android:id="@+id/in4"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginStart="10dp"
-                android:text="input 4:"
-                android:textColor="@android:color/black"/>
-              <TextView
-                android:id="@+id/in5"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginStart="10dp"
-                android:text="input 5:"
-                android:textColor="@android:color/black"/>
-              <TextView
-                android:id="@+id/in6"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginStart="10dp"
-                android:text="input 6:"
-                android:textColor="@android:color/black"/>
-              <TextView
-                android:id="@+id/in7"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginStart="10dp"
-                android:text="input 7:"
-                android:textColor="@android:color/black"/>
-
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_marginTop="5dp"
+                  android:layout_marginStart="10dp"
+                  android:text="input 1:"
+                  android:textColor="@android:color/black"/>
             </LinearLayout>
 
             <LinearLayout
-              android:id="@+id/inputValues"
+                android:id="@+id/inputValues"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+              <TextView
+                  android:id="@+id/input0"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_marginTop="5dp"
+                  android:layout_marginStart="10dp"
+                  android:text=""
+                  android:textColor="@android:color/black"/>
+              <TextView
+                  android:id="@+id/input1"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_marginTop="5dp"
+                  android:layout_marginStart="10dp"
+                  android:text=""
+                  android:textColor="@android:color/black"/>
+            </LinearLayout>
+          </LinearLayout>
+        </RelativeLayout>
+
+
+      </LinearLayout>
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ledsAndOutputs"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:weightSum="4">
+
+      <LinearLayout
+          android:id="@+id/leds"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:layout_weight="3"
+          android:background="@drawable/border"
+          android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+          <TextView
+              android:id="@+id/backLightTitle"
+              android:layout_width="110dp"
+              android:layout_height="wrap_content"
+              android:layout_marginStart="10dp"
+              android:text="Back Light"
+              android:textColor="@android:color/black"/>
+
+          <Switch
+              android:id="@+id/switchIRLight"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_marginStart="10dp"
+              />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+          <TextView
+              android:layout_width="110dp"
+              android:layout_height="wrap_content"
+              android:layout_marginStart="10dp"
+              android:text="Notification Led0"
+              android:textColor="@android:color/black"/>
+
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="horizontal"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent">
+
+            <CheckBox android:id="@+id/checkbox_red"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Red"/>
+            <CheckBox android:id="@+id/checkbox_green"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Green"/>
+            <CheckBox android:id="@+id/checkbox_blue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Blue"/>
+          </LinearLayout>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+          <TextView
+              android:layout_width="110dp"
+              android:layout_height="wrap_content"
+              android:layout_marginStart="10dp"
+              android:text="Notification Led1"
+              android:textColor="@android:color/black"/>
+
+          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="horizontal"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent">
+
+            <CheckBox android:id="@+id/checkbox_red1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Red"/>
+            <CheckBox android:id="@+id/checkbox_green1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Green"/>
+            <CheckBox android:id="@+id/checkbox_blue1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Blue"/>
+          </LinearLayout>
+
+        </LinearLayout>
+
+
+      </LinearLayout>
+
+      <LinearLayout
+          android:id="@+id/outputs"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:layout_weight="1"
+          android:background="@drawable/border"
+          android:orientation="vertical">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+          <LinearLayout
+              android:id="@+id/outputsView"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               android:orientation="vertical">
 
-              <TextView
-                android:id="@+id/input0"
+            <LinearLayout
+                android:id="@+id/out0"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginStart="10dp"
-                android:text=""
-                android:textColor="@android:color/black"/>
+                android:layout_margin="10dp"
+                android:orientation="horizontal">
               <TextView
-                android:id="@+id/input1"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_marginRight="20dp"
+                  android:text="Output 0: "
+                  android:textAlignment="center"
+                  android:textColor="@android:color/black"/>
+              <Switch
+                  android:id="@+id/switchOutput0"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"/>
+            </LinearLayout>
+            <LinearLayout
+                android:id="@+id/out1"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginStart="10dp"
-                android:text=""
-                android:textColor="@android:color/black"/>
+                android:layout_margin="10dp"
+                android:orientation="horizontal">
               <TextView
-                android:id="@+id/input2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginStart="10dp"
-                android:text=""
-                android:textColor="@android:color/black"/>
-              <TextView
-                android:id="@+id/input3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginStart="10dp"
-                android:text=""
-                android:textColor="@android:color/black"/>
-              <TextView
-                android:id="@+id/input4"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginStart="10dp"
-                android:text=""
-                android:textColor="@android:color/black"/>
-              <TextView
-                android:id="@+id/input5"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginStart="10dp"
-                android:text=""
-                android:textColor="@android:color/black"/>
-              <TextView
-                android:id="@+id/input6"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginStart="10dp"
-                android:text=""
-                android:textColor="@android:color/black"/>
-              <TextView
-                android:id="@+id/input7"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_marginStart="10dp"
-                android:text=""
-                android:textColor="@android:color/black"/>
-
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_marginRight="20dp"
+                  android:text="Output 1: "
+                  android:textAlignment="center"
+                  android:textColor="@android:color/black"/>
+              <Switch
+                  android:id="@+id/switchOutput1"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"/>
             </LinearLayout>
           </LinearLayout>
         </RelativeLayout>
-
-
       </LinearLayout>
-
-
     </LinearLayout>
-
-    <LinearLayout
-      android:id="@+id/ledsAndOutputs"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:layout_weight="1"
-      android:orientation="vertical"
-      android:weightSum="4">
-
-      <LinearLayout
-        android:id="@+id/leds"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="3"
-        android:background="@drawable/border"
-        android:orientation="vertical">
-
-        <LinearLayout
-          android:id="@+id/mcuLayout"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:orientation="horizontal">
-
-          <TextView
-            android:layout_width="110dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:text="MCU LED"
-            android:textColor="@android:color/black"/>
-
-          <Switch
-            android:id="@+id/switchMcuLight"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"/>
-        </LinearLayout>
-
-        <LinearLayout
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:orientation="horizontal">
-
-          <TextView
-            android:layout_width="110dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:text="Flash light"
-            android:textColor="@android:color/black"/>
-
-          <Switch
-            android:id="@+id/switchFlashLight"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"/>
-        </LinearLayout>
-
-        <LinearLayout
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:orientation="horizontal">
-
-          <TextView
-            android:id="@+id/backLightTitle"
-            android:layout_width="110dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:text="Back Light"
-            android:textColor="@android:color/black"/>
-
-          <Switch
-            android:id="@+id/switchIRLight"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            />
-        </LinearLayout>
-
-        <LinearLayout
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:orientation="horizontal">
-
-          <TextView
-            android:layout_width="110dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:text="Notification Led"
-            android:textColor="@android:color/black"/>
-
-          <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            android:orientation="horizontal"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent">
-
-            <CheckBox android:id="@+id/checkbox_red"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:text="Red"/>
-            <CheckBox android:id="@+id/checkbox_green"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:text="Green"/>
-            <CheckBox android:id="@+id/checkbox_blue"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:text="Blue"/>
-          </LinearLayout>
-
-        </LinearLayout>
-
-
-      </LinearLayout>
-
-      <LinearLayout
-        android:id="@+id/outputs"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:background="@drawable/border"
-        android:orientation="vertical">
-
-        <RelativeLayout
-          android:layout_width="match_parent"
-          android:layout_height="match_parent">
-
-          <TextView
-            android:id="@+id/outputsUnavaliable"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="15dp"
-            android:layout_marginStart="40dp"
-            android:text="Outputs Unavaliable"/>
-
-          <LinearLayout
-            android:id="@+id/outputsView"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <LinearLayout
-              android:id="@+id/out0"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:layout_margin="10dp"
-              android:orientation="horizontal">
-              <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="20dp"
-                android:text="Output 0: "
-                android:textAlignment="center"
-                android:textColor="@android:color/black"/>
-              <Switch
-                android:id="@+id/switchOutput0"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-            </LinearLayout>
-            <LinearLayout
-              android:id="@+id/out1"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:layout_margin="10dp"
-              android:orientation="horizontal">
-              <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="20dp"
-                android:text="Output 1: "
-                android:textAlignment="center"
-                android:textColor="@android:color/black"/>
-              <Switch
-                android:id="@+id/switchOutput1"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-            </LinearLayout>
-            <LinearLayout
-              android:id="@+id/out2"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:layout_margin="10dp"
-              android:orientation="horizontal">
-              <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="20dp"
-                android:text="Output 2: "
-                android:textAlignment="center"
-                android:textColor="@android:color/black"/>
-              <Switch
-                android:id="@+id/switchOutput2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-            </LinearLayout>
-            <LinearLayout
-              android:id="@+id/out3"
-              android:layout_width="wrap_content"
-              android:layout_height="wrap_content"
-              android:layout_margin="10dp"
-              android:orientation="horizontal">
-              <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginRight="20dp"
-                android:text="Output 3: "
-                android:textAlignment="center"
-                android:textColor="@android:color/black"/>
-              <Switch
-                android:id="@+id/switchOutput3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"/>
-            </LinearLayout>
-          </LinearLayout>
-        </RelativeLayout>
-
-      </LinearLayout>
-
-    </LinearLayout>
-
   </LinearLayout>
-
   <!--</ScrollView>-->
 </RelativeLayout>

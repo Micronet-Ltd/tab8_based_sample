@@ -47,8 +47,8 @@ public class AboutFragment extends Fragment {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_about, container, false);
         TextView txtAbout = rootView.findViewById(R.id.txtAppInfo);
-        txtAbout.setText(String.format("Sample App v %s\n" +
-            "Copyright © 2018 Micronet Inc.\n", BuildConfig.VERSION_NAME));
+        txtAbout.setText(String.format("SC200 Sample App v %s\n" +
+            "Copyright © 2021 Micronet Inc.\n", BuildConfig.VERSION_NAME));
 
         updateInfoText();
         return rootView;
@@ -64,21 +64,19 @@ public class AboutFragment extends Fragment {
         super.onPause();
     }
 
-    @SuppressLint("HardwareIds")
+    @SuppressLint({"HardwareIds", "MissingPermission"})
     public void updateInfoText() {
 
-        String mcuVersion = ((MainActivity.getSystemProperty(PROP_MCU_VERSION).equalsIgnoreCase("Unknown")) ? "Unknown" : MainActivity.getSystemProperty(PROP_MCU_VERSION));
-        String fpgaVersion = ((MainActivity.getSystemProperty(PROP_FPGA_VERSION).equalsIgnoreCase("Unknown")) ? "Unknown": getFPGAVersion(MainActivity.getSystemProperty(PROP_FPGA_VERSION)));
+//        String mcuVersion = ((MainActivity.getSystemProperty(PROP_MCU_VERSION).equalsIgnoreCase("Unknown")) ? "Unknown" : MainActivity.getSystemProperty(PROP_MCU_VERSION));
+//        String fpgaVersion = ((MainActivity.getSystemProperty(PROP_FPGA_VERSION).equalsIgnoreCase("Unknown")) ? "Unknown": getFPGAVersion(MainActivity.getSystemProperty(PROP_FPGA_VERSION)));
         TextView txtDeviceInfo = rootView.findViewById(R.id.txtDeviceInfo);
-        Log.d(TAG, "mcu: " + mcuVersion + " fpga: " + fpgaVersion);
+//        Log.d(TAG, "mcu: " + mcuVersion + " fpga: " + fpgaVersion);
         txtDeviceInfo.setText(String.format("OS Version: %s \n" +
-                "MCU Version: %s\n" +
-                "FPGA Version: %s\n" +
                 "Android Build Version: %s\n" +
                 "Device Model: %s\n" +
                 "Serial: %s\n",
-            Build.DISPLAY, mcuVersion, fpgaVersion, Build.VERSION.RELEASE, Build.MODEL,
-            Build.SERIAL));
+            Build.DISPLAY, Build.VERSION.RELEASE, Build.MODEL,
+            Build.getSerial()));
     }
 
     private static String getFPGAVersion(String hex) {

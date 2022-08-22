@@ -5,17 +5,11 @@
 
 package com.micronet.sampleapp.activities;
 
-import static java.lang.Character.isDigit;
-import static java.lang.Character.isUpperCase;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
@@ -24,44 +18,42 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
+
 import com.micronet.sampleapp.R;
 import com.micronet.sampleapp.fragments.AboutFragment;
-import com.micronet.sampleapp.fragments.CanbusFragment;
 import com.micronet.sampleapp.fragments.InputsOutputsLedsFragment;
 import com.micronet.sampleapp.fragments.PortsFragment;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.Character.isDigit;
+import static java.lang.Character.isUpperCase;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "SmartSampleApp";
-    public static final int SMARTTAB_STAND_ALONE = 0;
-    public static final int SMARTTAB_CRADLE_BASIC = 1;
-    public static final int SMARTTAB_CRADLE_ENHANCED = 2;
-    public static final int SMARTCAM_BASIC = 3;
-    public static final int SMARTCAM_ENHANCED = 4;
+    public static final int SC200_MINIMAL = 2;
+    public static final int SC200_MID = 3;
+    public static final int SC200_FULL = 4;
+    public static final int SC200_FULL_BATTERY = 5;
     public static final String vInputAction = "android.intent.action.VINPUTS_CHANGED";
     public static final String dockAction = "android.intent.action.DOCK_EVENT";
+    public static final String actionButton = "android.intent.action.ACTION_PANIC_BUTTON";
+    public static final String actionButtonRelease = "android.intent.action.ACTION_PANIC_BUTTON_RELEASE";
     public static int dockState = -1;
-    public static int actionId = 1;
-    private CameraManager camManager;
     public static int devType = -1;
     public static int cradleType = -1;
     public int mInputNum = -1;
     public int mInputValue = -1;
+    public boolean isActionButtonPressed=false;
     InputsOutputsLedsFragment ioLedFragment = new InputsOutputsLedsFragment();
     AboutFragment aboutFragment = new AboutFragment();
     PortsFragment portsFragment = new PortsFragment();
-    CanbusFragment canbusFragment = new CanbusFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,12 +61,14 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ViewPager viewPager = findViewById(R.id.viewpager);
         setupViewPager(viewPager);
-        devType = getDeviceType();
+        devType = getBoardType();
         TabLayout tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction(dockAction);
         intentFilter.addAction(vInputAction);
+        intentFilter.addAction(actionButton);
+        intentFilter.addAction(actionButtonRelease);
         this.registerReceiver(mReceiver, intentFilter);
     }
 
@@ -83,14 +77,14 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             goAsync();
-            Log.d(TAG, "dock or input action received");
+            Log.d(TAG, "dock, button, or input action received");
             String action = intent.getAction();
             if (action != null) {
                 switch (action) {
                     case dockAction:
                         dockState = intent.getIntExtra(Intent.EXTRA_DOCK_STATE, -1);
                         cradleType = intent.getIntExtra("DockValue", -1);
-                        devType = getDeviceType();
+                        devType = getBoardType();
                         if (ioLedFragment.isAdded()) {
                             ioLedFragment.updateCradleIgnState();
                             ioLedFragment.updateInputValues();
@@ -102,9 +96,6 @@ public class MainActivity extends AppCompatActivity {
                         if (portsFragment.isAdded()) {
                             portsFragment.updatePorts();
                         }
-                        if (canbusFragment.isAdded()) {
-                            canbusFragment.updateCanbus();
-                        }
                         Log.d(TAG, "Dock event received: " + dockState + ", value: " + getCradleType(cradleType));
                         break;
                     case vInputAction:
@@ -112,6 +103,18 @@ public class MainActivity extends AppCompatActivity {
                         mInputValue = intent.getIntExtra("VINPUT_VALUE", -1);
                         if (ioLedFragment.isAdded()) {
                             ioLedFragment.updateInputState(mInputNum, mInputValue);
+                        }
+                        break;
+                    case actionButton:
+                        if (!isActionButtonPressed) {
+                            Toast.makeText(context, "Button Pressed", Toast.LENGTH_LONG).show();
+                            isActionButtonPressed=true;
+                        }
+                        break;
+                    case actionButtonRelease:
+                        if (isActionButtonPressed) {
+                            Toast.makeText(context, "Button Released", Toast.LENGTH_LONG).show();
+                            isActionButtonPressed=false;
                         }
                         break;
                 }
@@ -130,35 +133,35 @@ public class MainActivity extends AppCompatActivity {
         return res;
     }
 
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        Log.d("AAAAAAAA key", "keycode: " + keyCode);
-        if ((keyCode == KeyEvent.KEYCODE_F1 && MainActivity.getBoardType() < 2) || (keyCode == KeyEvent.KEYCODE_WINDOW && MainActivity.getBoardType() >= 2)) {
-            event.startTracking();
-            return true;
-        } else {
-            return super.onKeyDown(keyCode, event);
-        }
-    }
+//    @Override
+//    public boolean onKeyDown(int keyCode, KeyEvent event) {
+//        Log.d("AAAAAAAA key", "keycode: " + keyCode);
+//        if ((keyCode == KeyEvent.KEYCODE_F1 && MainActivity.getBoardType() < 2) || (keyCode == KeyEvent.KEYCODE_WINDOW && MainActivity.getBoardType() >= 2)) {
+//            event.startTracking();
+//            return true;
+//        } else {
+//            return super.onKeyDown(keyCode, event);
+//        }
+//    }
 
-    @Override
-    public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if ((keyCode == KeyEvent.KEYCODE_F1 && MainActivity.getBoardType() < 2) || (keyCode == KeyEvent.KEYCODE_WINDOW && MainActivity.getBoardType() >= 2)) {
-            if (event.isTracking() && !event.isCanceled()) {
-                switch (actionId) {
-                    case 0:
-                        setFlashLight(true);
-                        break;
-                    case 1:
-                        setFlashLight(false);
-                        break;
-                }
-                return true;
-            }
-
-        }
-        return super.onKeyUp(keyCode, event);
-    }
+//    @Override
+//    public boolean onKeyUp(int keyCode, KeyEvent event) {
+//        if ((keyCode == KeyEvent.KEYCODE_F1 && MainActivity.getBoardType() < 2) || (keyCode == KeyEvent.KEYCODE_WINDOW && MainActivity.getBoardType() >= 2)) {
+//            if (event.isTracking() && !event.isCanceled()) {
+//                switch (actionId) {
+//                    case 0:
+//                        setFlashLight(true);
+//                        break;
+//                    case 1:
+//                        setFlashLight(false);
+//                        break;
+//                }
+//                return true;
+//            }
+//
+//        }
+//        return super.onKeyUp(keyCode, event);
+//    }
 
     @Override
     protected void onResume() {
@@ -182,32 +185,12 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "Configuration changed: " + newConfig.toString());
     }
 
-
-    public static synchronized int getDockState() {
-        return dockState;
-    }
-
-
     private void setupViewPager(ViewPager viewPager) {
         ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.addFragment(ioLedFragment, "io+leds");
         adapter.addFragment(aboutFragment, "Info");
         adapter.addFragment(portsFragment, "Ports+other");
-        adapter.addFragment(canbusFragment, "Canbus");
         viewPager.setAdapter(adapter);
-    }
-
-    public void setFlashLight(boolean setLight) {
-        try {
-            camManager = (CameraManager) this.getSystemService(Context.CAMERA_SERVICE);
-            String cameraId = null; // Usually front camera is at 0 position.
-            if (camManager != null) {
-                cameraId = camManager.getCameraIdList()[0];
-                camManager.setTorchMode(cameraId, setLight); //true = turn on; false = turn off
-            }
-        } catch (CameraAccessException e) {
-            Log.e(TAG, e.toString());
-        }
     }
 
     class ViewPagerAdapter extends FragmentPagerAdapter {
@@ -286,40 +269,39 @@ public class MainActivity extends AppCompatActivity {
         return ret;
     }
 
-    public static int getDeviceType() {
+//    public static int getDeviceType() {
+//        int boardType = getBoardType();
+//
+//        if (dockState == Intent.EXTRA_DOCK_STATE_UNDOCKED || dockState == -1) {
+//            return SMARTTAB_STAND_ALONE;
+//        }
+//        switch (boardType) {
+//            case 0:
+//                return SMARTTAB_CRADLE_ENHANCED;
+//            case 1:
+//                return SMARTTAB_CRADLE_BASIC;
+//            case 2:
+//                return SMARTCAM_BASIC;
+//            case 6:
+//                return SMARTCAM_ENHANCED;
+//        }
+//        return -1;
+//    }
+
+    public static String getDevTypeMessage() {
         int boardType = getBoardType();
-
-        if (dockState == Intent.EXTRA_DOCK_STATE_UNDOCKED || dockState == -1) {
-            return SMARTTAB_STAND_ALONE;
-        }
         switch (boardType) {
-            case 0:
-                return SMARTTAB_CRADLE_ENHANCED;
-            case 1:
-                return SMARTTAB_CRADLE_BASIC;
             case 2:
-                return SMARTCAM_BASIC;
-            case 6:
-                return SMARTCAM_ENHANCED;
-        }
-        return -1;
-    }
-
-    public static String getDevTypeMessage(int devType) {
-
-        switch (devType) {
-            case 0:
-                return "Tab8 standalone";
-            case 1:
-                return "Tab8-LowCost";
-            case 2:
-                return "TAB8 LTE";
+                return "SC-200 Minimal";
             case 3:
-                return "SmartCam (basic)";
+                return "SC-200 Mid";
             case 4:
-                return "SmartCam (full)";
+                return "SC-200 Full, With Battery";
+            case 5:
+                return "SC-200 Full, Without Battery";
+            default:
+                return "Unknown";
         }
-        return "Unknown";
     }
 
     public static String getSystemProperty(String propName) {
