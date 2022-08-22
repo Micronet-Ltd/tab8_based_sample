@@ -438,8 +438,10 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
     }
 
     public void setNotificationLight(boolean isRedChecked, boolean isGreenChecked, boolean isBlueChecked) {
-        int lightColor = (0xFF << 24) | ((isRedChecked ? 0xFF : 0x00) << 16) | ((isGreenChecked ? 0xFF : 0x00) << 8) | (isBlueChecked ? 0xFF : 0x00);
+        int lightColor = (0xFF << 24) | ((isRedChecked ? 0xFF : 0x00) << 16);
         setLight(lightColor, "LIGHT_ID_BATTERY");
+		
+        lightColor = (0x30 << 24) | ((isRedChecked ? 0x3 : 0x00) << 16) | ((isGreenChecked ? 0x3 : 0x00) << 8) | (isBlueChecked ? 0x3 : 0x00);
         setLight(lightColor, "LIGHT_ID_NOTIFICATIONS");
     }
 
