@@ -24,6 +24,7 @@ import android.widget.Toast;
 
 import com.micronet.sampleapp.R;
 import com.micronet.sampleapp.fragments.AboutFragment;
+import com.micronet.sampleapp.fragments.CanbusFragment;
 import com.micronet.sampleapp.fragments.InputsOutputsLedsFragment;
 import com.micronet.sampleapp.fragments.PortsFragment;
 
@@ -41,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
     public static final int SC200_MID = 3;
     public static final int SC200_FULL = 4;
     public static final int SC200_FULL_BATTERY = 5;
+    public static final int SC200_FULL_CANBUS = 6;
     public static final String vInputAction = "android.intent.action.VINPUTS_CHANGED";
     public static final String dockAction = "android.intent.action.DOCK_EVENT";
     public static final String actionButton = "android.intent.action.ACTION_PANIC_BUTTON";
@@ -54,6 +56,7 @@ public class MainActivity extends AppCompatActivity {
     InputsOutputsLedsFragment ioLedFragment = new InputsOutputsLedsFragment();
     AboutFragment aboutFragment = new AboutFragment();
     PortsFragment portsFragment = new PortsFragment();
+    CanbusFragment canbusFragment = new CanbusFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -190,6 +193,7 @@ public class MainActivity extends AppCompatActivity {
         adapter.addFragment(ioLedFragment, "io+leds");
         adapter.addFragment(aboutFragment, "Info");
         adapter.addFragment(portsFragment, "Ports+other");
+        adapter.addFragment(canbusFragment, "Canbus");
         viewPager.setAdapter(adapter);
     }
 

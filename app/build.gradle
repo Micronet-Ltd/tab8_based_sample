@@ -12,10 +12,10 @@ android {
     }
     compileSdk 28
 
-    buildToolsVersion '28.0.3'
     defaultConfig {
         applicationId "com.micronet.sampleapp"
         minSdk 28
+        //noinspection ExpiredTargetSdkVersion
         targetSdk 28
         versionCode 1
         versionName '1.0.0'
@@ -41,6 +41,7 @@ android {
             path 'src/main/jni/Android.mk'
         }
     }
+    namespace 'com.micronet.sampleapp'
 }
 
 dependencies {
