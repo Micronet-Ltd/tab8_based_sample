@@ -23,7 +23,8 @@
         android:theme="@style/AppTheme">
         <activity android:name=".activities.MainActivity"
             android:screenOrientation="landscape"
-            android:configChanges="uiMode">
+            android:configChanges="uiMode"
+            android:exported="true">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

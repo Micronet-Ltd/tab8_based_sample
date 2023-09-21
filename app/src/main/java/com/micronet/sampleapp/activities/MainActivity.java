@@ -11,12 +11,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
+import com.google.android.material.tabs.TabLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -63,8 +63,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ViewPager viewPager = findViewById(R.id.viewpager);
-        setupViewPager(viewPager);
         devType = getBoardType();
+        setupViewPager(viewPager);
         TabLayout tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
         IntentFilter intentFilter = new IntentFilter();
@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
         adapter.addFragment(ioLedFragment, "io+leds");
         adapter.addFragment(aboutFragment, "Info");
         adapter.addFragment(portsFragment, "Ports+other");
-        adapter.addFragment(canbusFragment, "Canbus");
+        if (devType==SC200_FULL_CANBUS) adapter.addFragment(canbusFragment, "Canbus");
         viewPager.setAdapter(adapter);
     }
 
@@ -303,6 +303,8 @@ public class MainActivity extends AppCompatActivity {
                 return "SC-200 Full, With Battery";
             case 5:
                 return "SC-200 Full, Without Battery";
+            case 6:
+                return "SC-200 Full, No Battery + Canbus";
             default:
                 return "Unknown";
         }

@@ -8,9 +8,9 @@ package com.micronet.sampleapp.fragments;
 import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
-import android.util.Log;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,12 +19,10 @@ import android.widget.TextView;
 import com.micronet.sampleapp.BuildConfig;
 import com.micronet.sampleapp.R;
 
-import com.micronet.sampleapp.activities.MainActivity;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 
 public class AboutFragment extends Fragment {
 
