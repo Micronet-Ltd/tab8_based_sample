@@ -211,25 +211,25 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
     }
 
     public void updateInputValues() {
-        if (MainActivity.devType == MainActivity.SC200_MINIMAL || MainActivity.devType == MainActivity.SC200_MID) {
-            rootView.findViewById(R.id.inputsView).setVisibility(View.INVISIBLE);
-        } else {
+//        if (MainActivity.devType == MainActivity.SC200_MINIMAL || MainActivity.devType == MainActivity.SC200_MID) {
+//            rootView.findViewById(R.id.inputsView).setVisibility(View.INVISIBLE);
+//        } else {
             rootView.findViewById(R.id.inputsView).setVisibility(View.VISIBLE);
-            if (MainActivity.devType == MainActivity.SC200_FULL || MainActivity.devType == MainActivity.SC200_FULL_BATTERY) {
+            if (MainActivity.devType == MainActivity.SC600_FULL || MainActivity.devType == MainActivity.SC600_FULL_NO_BATTERY) {
                 input0.setText(((getInput(0) == 0) ? "OFF (" : "ON (") + getInput(0) + ")");
                 input1.setText(((getInput(1) == 0) ? "OFF (" : "ON (") + getInput(1) + ")");
             } else {
                 rootView.findViewById(R.id.input0).setVisibility(View.INVISIBLE);
                 rootView.findViewById(R.id.input1).setVisibility(View.INVISIBLE);
             }
-        }
+//        }
 
     }
 
     public void updateOutputState() {
-        if (MainActivity.devType == MainActivity.SC200_MINIMAL || MainActivity.devType == MainActivity.SC200_MID) {
-            rootView.findViewById(R.id.outputsView).setVisibility(View.INVISIBLE);
-        } else {
+//        if (MainActivity.devType == MainActivity.SC200_MINIMAL || MainActivity.devType == MainActivity.SC200_MID) {
+//            rootView.findViewById(R.id.outputsView).setVisibility(View.INVISIBLE);
+//        } else {
             rootView.findViewById(R.id.outputsView).setVisibility(View.VISIBLE);
             int[] outputValueList = getOutputsState();
             if (outputValueList.length >= 1) {
@@ -238,7 +238,7 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
             if (outputValueList.length >= 2) {
                 out1.setChecked((outputValueList[1] == 1) ? true : false);
             }
-        }
+//        }
     }
 
 
@@ -377,7 +377,7 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
         int lightColor = (0xFF << 24) | ((red0 ? 0xFF : 0x00) << 16);
         setLight(lightColor, "LIGHT_ID_BATTERY");
 
-        lightColor = (0x30 << 24) | ((red1 ? 0x2 : 0x00) << 16) | ((green1 ? 0x2 : 0x00) << 8) | (blue1 ? 0x2 : 0x00)
+        lightColor = (0x30 << 24) | ((red1 ? 0x4 : 0x00) << 16) | ((green1 ? 0x4 : 0x00) << 8) | (blue1 ? 0x4 : 0x00)
                 | ((green0 ? 0x1 : 0x00) << 8) | (blue0 ? 0x1 : 0x00);
         setLight(lightColor, "LIGHT_ID_NOTIFICATIONS");
     }

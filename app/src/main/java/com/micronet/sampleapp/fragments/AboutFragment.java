@@ -45,8 +45,8 @@ public class AboutFragment extends Fragment {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_about, container, false);
         TextView txtAbout = rootView.findViewById(R.id.txtAppInfo);
-        txtAbout.setText(String.format("SC200 Sample App v %s\n" +
-            "Copyright © 2021 Micronet Inc.\n", BuildConfig.VERSION_NAME));
+        txtAbout.setText(String.format("SC600 Sample App v %s\n" +
+            "Copyright © 2023 Micronet Inc.\n", BuildConfig.VERSION_NAME));
 
         updateInfoText();
         return rootView;

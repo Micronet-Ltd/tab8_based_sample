@@ -38,11 +38,9 @@ import static java.lang.Character.isUpperCase;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "SmartSampleApp";
-    public static final int SC200_MINIMAL = 2;
-    public static final int SC200_MID = 3;
-    public static final int SC200_FULL = 4;
-    public static final int SC200_FULL_BATTERY = 5;
-    public static final int SC200_FULL_CANBUS = 6;
+    public static final int SC600_FULL = 0;
+    public static final int SC600_FULL_NO_BATTERY = 5;
+    public static final int SC600_FULL_NO_BATTERY_CANBUS = 6;
     public static final String vInputAction = "android.intent.action.VINPUTS_CHANGED";
     public static final String dockAction = "android.intent.action.DOCK_EVENT";
     public static final String actionButton = "android.intent.action.ACTION_PANIC_BUTTON";
@@ -193,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
         adapter.addFragment(ioLedFragment, "io+leds");
         adapter.addFragment(aboutFragment, "Info");
         adapter.addFragment(portsFragment, "Ports+other");
-        if (devType==SC200_FULL_CANBUS) adapter.addFragment(canbusFragment, "Canbus");
+        if (devType== SC600_FULL_NO_BATTERY_CANBUS) adapter.addFragment(canbusFragment, "Canbus");
         viewPager.setAdapter(adapter);
     }
 
@@ -295,16 +293,12 @@ public class MainActivity extends AppCompatActivity {
     public static String getDevTypeMessage() {
         int boardType = getBoardType();
         switch (boardType) {
-            case 2:
-                return "SC-200 Minimal";
-            case 3:
-                return "SC-200 Mid";
-            case 4:
-                return "SC-200 Full, With Battery";
+            case 0:
+                return "SC-600 Full, With Battery";
             case 5:
-                return "SC-200 Full, Without Battery";
+                return "SC-600 Full, Without Battery";
             case 6:
-                return "SC-200 Full, No Battery + Canbus";
+                return "SC-600 Full, No Battery + Canbus";
             default:
                 return "Unknown";
         }
