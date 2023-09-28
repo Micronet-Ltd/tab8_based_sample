@@ -267,6 +267,7 @@ public class MainActivity extends AppCompatActivity {
         if (s == null || s.equals(""))
             return 0;
         ret = Integer.parseInt(s);
+        ret = Integer.reverse(ret)>>>(32-3); // 32 bits per Integer, 3 bits are size of id param.
         Log.d(TAG, "board id: " + ret);
         return ret;
     }
