@@ -17,10 +17,10 @@ android {
         minSdk 28
         targetSdk 33
         versionCode 1
-        versionName '1.0.0'
+        versionName '1.0.1'
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         ndk{
-            abiFilters "armeabi-v7a", "x86"
+            abiFilters "armeabi-v7a"
         }
 
     }
@@ -41,6 +41,7 @@ android {
         }
     }
     namespace 'com.micronet.sampleapp'
+    buildToolsVersion '33.0.2'
 }
 
 dependencies {
