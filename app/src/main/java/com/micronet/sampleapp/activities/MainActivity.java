@@ -20,8 +20,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
+import com.micronet.sampleapp.HWButtonService;
 import com.micronet.sampleapp.R;
 import com.micronet.sampleapp.fragments.AboutFragment;
 import com.micronet.sampleapp.fragments.CanbusFragment;
@@ -41,16 +41,13 @@ public class MainActivity extends AppCompatActivity {
     public static final int SC600_FULL = 0;
     public static final int SC600_FULL_NO_BATTERY = 5;
     public static final int SC600_FULL_NO_BATTERY_CANBUS = 6;
-    public static final String vInputAction = "android.intent.action.VINPUTS_CHANGED";
-    public static final String dockAction = "android.intent.action.DOCK_EVENT";
-    public static final String actionButton = "android.intent.action.ACTION_PANIC_BUTTON";
-    public static final String actionButtonRelease = "android.intent.action.ACTION_PANIC_BUTTON_RELEASE";
+    public static final String V_INPUT_ACTION = "android.intent.action.VINPUTS_CHANGED";
+    public static final String DOCK_ACTION = "android.intent.action.DOCK_EVENT";
     public static int dockState = -1;
     public static int devType = -1;
     public static int cradleType = -1;
     public int mInputNum = -1;
     public int mInputValue = -1;
-    public boolean isActionButtonPressed=false;
     InputsOutputsLedsFragment ioLedFragment = new InputsOutputsLedsFragment();
     AboutFragment aboutFragment = new AboutFragment();
     PortsFragment portsFragment = new PortsFragment();
@@ -59,17 +56,21 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        startService(new Intent(this, HWButtonService.class));
         setContentView(R.layout.activity_main);
         ViewPager viewPager = findViewById(R.id.viewpager);
         devType = getBoardType();
         setupViewPager(viewPager);
         TabLayout tabLayout = findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(viewPager);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
         IntentFilter intentFilter = new IntentFilter();
-        intentFilter.addAction(dockAction);
-        intentFilter.addAction(vInputAction);
-        intentFilter.addAction(actionButton);
-        intentFilter.addAction(actionButtonRelease);
+        intentFilter.addAction(DOCK_ACTION);
+        intentFilter.addAction(V_INPUT_ACTION);
         this.registerReceiver(mReceiver, intentFilter);
     }
 
@@ -82,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
             String action = intent.getAction();
             if (action != null) {
                 switch (action) {
-                    case dockAction:
+                    case DOCK_ACTION:
                         dockState = intent.getIntExtra(Intent.EXTRA_DOCK_STATE, -1);
                         cradleType = intent.getIntExtra("DockValue", -1);
                         devType = getBoardType();
@@ -99,29 +100,15 @@ public class MainActivity extends AppCompatActivity {
                         }
                         Log.d(TAG, "Dock event received: " + dockState + ", value: " + getCradleType(cradleType));
                         break;
-                    case vInputAction:
+                    case V_INPUT_ACTION:
                         mInputNum = intent.getIntExtra("VINPUT_NUM", -1);
                         mInputValue = intent.getIntExtra("VINPUT_VALUE", -1);
                         if (ioLedFragment.isAdded()) {
                             ioLedFragment.updateInputState(mInputNum, mInputValue);
                         }
                         break;
-                    case actionButton:
-                        if (!isActionButtonPressed) {
-                            Toast.makeText(context, "Button Pressed", Toast.LENGTH_LONG).show();
-                            isActionButtonPressed=true;
-                        }
-                        break;
-                    case actionButtonRelease:
-                        if (isActionButtonPressed) {
-                            Toast.makeText(context, "Button Released", Toast.LENGTH_LONG).show();
-                            isActionButtonPressed=false;
-                        }
-                        break;
                 }
             }
-
-
         }
     };
 
@@ -134,36 +121,6 @@ public class MainActivity extends AppCompatActivity {
         return res;
     }
 
-//    @Override
-//    public boolean onKeyDown(int keyCode, KeyEvent event) {
-//        Log.d("AAAAAAAA key", "keycode: " + keyCode);
-//        if ((keyCode == KeyEvent.KEYCODE_F1 && MainActivity.getBoardType() < 2) || (keyCode == KeyEvent.KEYCODE_WINDOW && MainActivity.getBoardType() >= 2)) {
-//            event.startTracking();
-//            return true;
-//        } else {
-//            return super.onKeyDown(keyCode, event);
-//        }
-//    }
-
-//    @Override
-//    public boolean onKeyUp(int keyCode, KeyEvent event) {
-//        if ((keyCode == KeyEvent.KEYCODE_F1 && MainActivity.getBoardType() < 2) || (keyCode == KeyEvent.KEYCODE_WINDOW && MainActivity.getBoardType() >= 2)) {
-//            if (event.isTracking() && !event.isCanceled()) {
-//                switch (actionId) {
-//                    case 0:
-//                        setFlashLight(true);
-//                        break;
-//                    case 1:
-//                        setFlashLight(false);
-//                        break;
-//                }
-//                return true;
-//            }
-//
-//        }
-//        return super.onKeyUp(keyCode, event);
-//    }
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -175,8 +132,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onDestroy() {
+    protected void onStop() {
         unregisterReceiver(mReceiver);
+        super.onStop();
+    }
+
+    @Override
+    public void onDestroy() {
+        //stopService(new Intent(this, HWButtonService.class));
         super.onDestroy();
     }
 

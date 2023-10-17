@@ -7,11 +7,7 @@ package com.micronet.sampleapp.fragments;
 
 import android.content.Context;
 import android.content.Intent;
-import android.hardware.camera2.CameraAccessException;
-import android.hardware.camera2.CameraManager;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,12 +17,17 @@ import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.Switch;
 import android.widget.TextView;
+
 import com.micronet.sampleapp.R;
 import com.micronet.sampleapp.activities.MainActivity;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 
 /**
  * GPIO Fragment Class
@@ -48,8 +49,6 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
     boolean isRed1Checked = false;
     boolean isGreen1Checked = false;
     boolean isBlue1Checked = false;
-
-    private CameraManager camManager;
 
     public InputsOutputsLedsFragment() {
         // Required empty public constructor
@@ -77,8 +76,8 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
 
         out0 = rootView.findViewById(R.id.switchOutput0);
         out1 = rootView.findViewById(R.id.switchOutput1);
-        out0.setOnCheckedChangeListener(this);
-        out1.setOnCheckedChangeListener(this);
+        out0.setOnCheckedChangeListener((buttonView, isChecked) -> setOutput(0, isChecked));
+        out1.setOnCheckedChangeListener((buttonView, isChecked) -> setOutput(1, isChecked));
         updateOutputState();
 
         //Lights
@@ -97,13 +96,37 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
         red1.setChecked(false);
         green1.setChecked(false);
         blue1.setChecked(false);
-        red.setOnCheckedChangeListener(this);
-        green.setOnCheckedChangeListener(this);
-        blue.setOnCheckedChangeListener(this);
-        red1.setOnCheckedChangeListener(this);
-        green1.setOnCheckedChangeListener(this);
-        blue1.setOnCheckedChangeListener(this);
-        setNotificationLight(false,false,false,false,false,false);
+        isRedChecked = false;
+        isGreenChecked = false;
+        isBlueChecked = false;
+        isRed1Checked = false;
+        isGreen1Checked = false;
+        isBlue1Checked = false;
+        red.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isRedChecked=isChecked;
+            setNotificationLight();
+        });
+        green.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isGreenChecked=isChecked;
+            setNotificationLight();
+        });
+        blue.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isBlueChecked=isChecked;
+            setNotificationLight();
+        });
+        red1.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isRed1Checked=isChecked;
+            setNotificationLight();
+        });
+        green1.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isGreen1Checked=isChecked;
+            setNotificationLight();
+        });
+        blue1.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            isBlue1Checked=isChecked;
+            setNotificationLight();
+        });
+        setNotificationLight();
         return rootView;
     }
 
@@ -174,15 +197,8 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
             inputValue = (int) readInput.invoke(ioServiceInstance, inputNumber);
         } catch (IllegalArgumentException iAE) {
             throw iAE;
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (java.lang.InstantiationException e) {
+        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
+                 InvocationTargetException | java.lang.InstantiationException e) {
             e.printStackTrace();
         }
         return inputValue;
@@ -202,26 +218,17 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
     }
 
     public void updateInputState(int inputNum, int inputValue) {
-        if (Integer.toString(inputValue) != null) {
+        if (getInputView(inputNum) != null) {
             getInputView(inputNum).setText(((inputValue == 0) ? "OFF (" : "ON (") + Integer.toString(inputValue) + ")");
-        } else {
-            getInputView(inputNum).setText("OFF (0)");
         }
         Log.d(TAG, "Vinput event received. Input number: " + inputNum + ". InputValue: " + inputValue);
     }
 
     public void updateInputValues() {
-//        if (MainActivity.devType == MainActivity.SC200_MINIMAL || MainActivity.devType == MainActivity.SC200_MID) {
-//            rootView.findViewById(R.id.inputsView).setVisibility(View.INVISIBLE);
-//        } else {
-            rootView.findViewById(R.id.inputsView).setVisibility(View.VISIBLE);
-            if (MainActivity.devType == MainActivity.SC600_FULL || MainActivity.devType == MainActivity.SC600_FULL_NO_BATTERY) {
-                input0.setText(((getInput(0) == 0) ? "OFF (" : "ON (") + getInput(0) + ")");
-                input1.setText(((getInput(1) == 0) ? "OFF (" : "ON (") + getInput(1) + ")");
-            } else {
-                rootView.findViewById(R.id.input0).setVisibility(View.INVISIBLE);
-                rootView.findViewById(R.id.input1).setVisibility(View.INVISIBLE);
-            }
+        rootView.findViewById(R.id.inputsView).setVisibility(View.VISIBLE);
+//            if (MainActivity.devType == MainActivity.SC600_FULL || MainActivity.devType == MainActivity.SC600_FULL_NO_BATTERY) {
+        input0.setText(((getInput(0) == 0) ? "OFF (" : "ON (") + getInput(0) + ")");
+        input1.setText(((getInput(1) == 0) ? "OFF (" : "ON (") + getInput(1) + ")");
 //        }
 
     }
@@ -230,14 +237,14 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
 //        if (MainActivity.devType == MainActivity.SC200_MINIMAL || MainActivity.devType == MainActivity.SC200_MID) {
 //            rootView.findViewById(R.id.outputsView).setVisibility(View.INVISIBLE);
 //        } else {
-            rootView.findViewById(R.id.outputsView).setVisibility(View.VISIBLE);
-            int[] outputValueList = getOutputsState();
-            if (outputValueList.length >= 1) {
-                out0.setChecked((outputValueList[0] == 1) ? true : false);
-            }
-            if (outputValueList.length >= 2) {
-                out1.setChecked((outputValueList[1] == 1) ? true : false);
-            }
+        rootView.findViewById(R.id.outputsView).setVisibility(View.VISIBLE);
+        int[] outputValueList = getOutputsState();
+        if (outputValueList.length >= 1) {
+            out0.setChecked(outputValueList[0] == 1);
+        }
+        if (outputValueList.length >= 2) {
+            out1.setChecked(outputValueList[1] == 1);
+        }
 //        }
     }
 
@@ -305,61 +312,17 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         switch (buttonView.getId()) {
-            case R.id.switchOutput0:
-                setOutput(0, isChecked);
-                break;
-            case R.id.switchOutput1:
-                setOutput(1, isChecked);
-                break;
             case R.id.switchIRLight:
                 if (isChecked) {
                     setLight(0xFFFFFFFF, "LIGHT_ID_BACKLIGHT");
                 } else {
                     //if (MainActivity.devType == MainActivity.SMARTCAM_BASIC || MainActivity.devType == MainActivity.SMARTCAM_ENHANCED) {
-                        setLight(0x00000000, "LIGHT_ID_BACKLIGHT");
+                    setLight(0x00000000, "LIGHT_ID_BACKLIGHT");
                     //} else {
                     //    setLight(0x80808080, "LIGHT_ID_BACKLIGHT");
                     //}
                 }
                 break;
-            case R.id.checkbox_red:
-                isRedChecked = isChecked;
-                setNotificationLight(isRedChecked, isGreenChecked, isBlueChecked, isRed1Checked,isGreen1Checked,isBlue1Checked);
-                break;
-            case R.id.checkbox_green:
-                isGreenChecked = isChecked;
-                setNotificationLight(isRedChecked, isGreenChecked, isBlueChecked, isRed1Checked,isGreen1Checked,isBlue1Checked);
-                break;
-            case R.id.checkbox_blue:
-                isBlueChecked = isChecked;
-                setNotificationLight(isRedChecked, isGreenChecked, isBlueChecked, isRed1Checked,isGreen1Checked,isBlue1Checked);
-                break;
-            case R.id.checkbox_red1:
-                isRed1Checked = isChecked;
-                setNotificationLight(isRedChecked, isGreenChecked, isBlueChecked, isRed1Checked,isGreen1Checked,isBlue1Checked);
-                break;
-            case R.id.checkbox_green1:
-                isGreen1Checked = isChecked;
-                setNotificationLight(isRedChecked, isGreenChecked, isBlueChecked, isRed1Checked,isGreen1Checked,isBlue1Checked);
-                break;
-            case R.id.checkbox_blue1:
-                isBlue1Checked = isChecked;
-                setNotificationLight(isRedChecked, isGreenChecked, isBlueChecked, isRed1Checked,isGreen1Checked,isBlue1Checked);
-                break;
-        }
-    }
-
-
-    public void setFlashLight(boolean setLight) {
-        try {
-            camManager = (CameraManager) getContext().getSystemService(Context.CAMERA_SERVICE);
-            String cameraId = null; // Usually front camera is at 0 position.
-            if (camManager != null) {
-                cameraId = camManager.getCameraIdList()[0];
-                camManager.setTorchMode(cameraId, setLight); //true = turn on; false = turn off
-            }
-        } catch (CameraAccessException e) {
-            Log.e(TAG, e.toString());
         }
     }
 
@@ -373,12 +336,12 @@ public class InputsOutputsLedsFragment extends Fragment implements OnCheckedChan
         setLight(color, "LIGHT_ID_KEYBOARD");
     }
 
-    public void setNotificationLight(boolean red0, boolean green0, boolean blue0,boolean red1, boolean green1, boolean blue1) {
-        int lightColor = (0xFF << 24) | ((red0 ? 0xFF : 0x00) << 16);
+    public void setNotificationLight() {
+        int lightColor = (0xFF << 24) | ((isRedChecked ? 0xFF : 0x00) << 16);
         setLight(lightColor, "LIGHT_ID_BATTERY");
 
-        lightColor = (0x30 << 24) | ((red1 ? 0x4 : 0x00) << 16) | ((green1 ? 0x4 : 0x00) << 8) | (blue1 ? 0x4 : 0x00)
-                | ((green0 ? 0x1 : 0x00) << 8) | (blue0 ? 0x1 : 0x00);
+        lightColor = (0x30 << 24) | ((isRed1Checked ? 0x4 : 0x00) << 16) | ((isGreen1Checked ? 0x4 : 0x00) << 8) | (isBlue1Checked ? 0x4 : 0x00)
+                | ((isGreenChecked ? 0x1 : 0x00) << 8) | (isBlueChecked ? 0x1 : 0x00);
         setLight(lightColor, "LIGHT_ID_NOTIFICATIONS");
     }
 
