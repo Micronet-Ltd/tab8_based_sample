@@ -49,7 +49,7 @@ public class PortsFragment extends Fragment implements OnClickListener, AdapterV
 
     String[] RSPortList = {"/dev/ttyUSB0", "/dev/ttyUSB1", "/dev/ttyUSB2", "/dev/ttyUSB3"};
     String[] RSPortListCamEnh = {"/dev/ttyMICRONET_ACCEL"};
-    String[] RSPortListBasicCradle = {"/dev/ttyMSM1"};
+    String[] RSPortListBasicCradle = {"/dev/ttyHSL1"};
     String[] baudrateList = {"300", "600", "1200", "1800", "2400", "4800", "9600", "19200", "38400", "57600", "115200"};
     Spinner serialPortRS232;
     Spinner baudrateRS232;
