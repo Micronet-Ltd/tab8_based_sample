@@ -6,9 +6,10 @@
 package com.micronet.sampleapp.fragments;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -61,7 +62,7 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
     String[] canbusBitrateList = {"10Kbit", "20Kbit", "33.33Kbit", "50Kbit", "100Kbit", "125Kbit", "250Kbit", "500Kbit", "800Kbit", "1Mbit"};
     int[] canbusBitrateListValues = {10000, 20000, 33330, 50000, 100000, 125000, 250000, 500000, 800000, 1000000};
     int currentPort = 1;
-    int currentBitrate = 10000;
+    int currentBitrate = 250000;
     boolean termination = true;
     boolean listenerMode = false;
     boolean canOpened = false;
@@ -86,6 +87,7 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
 
     OutputStream mOutputStream;
     InputStream mInputStream;
+    private int counter=0;
 
     public CanbusFragment() {
         // Required empty public constructor
@@ -249,6 +251,9 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
     }
 
     private class ReadThread extends Thread {
+        public ReadThread(@NonNull String name) {
+            super(name);
+        }
 
         @Override
         public void run() {
@@ -263,7 +268,7 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
                     size = mInputStream.read(buffer);
                     if (size > 0) {
                         onDataReceived(buffer, size);
-                    }
+                    } else if (size<0) return;
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -280,15 +285,16 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        allReceivedData = receivedDataValue.substring(0, size);
+        counter++;
+//        allReceivedData = receivedDataValue.substring(0, size)+" "+counter;
 
-        mainActivity.runOnUiThread(new Runnable() {
-
-            @Override
-            public void run() {
-                receivedData.setText(allReceivedData);
-            }
-        });
+//        mainActivity.runOnUiThread(new Runnable() {
+//
+//            @Override
+//            public void run() {
+//                receivedData.setText(allReceivedData);
+//            }
+//        });
 
     }
 
@@ -344,7 +350,7 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
                 mInputStream = new FileInputStream(canbusPortList[currentPort - 1]);
                 mOutputStream = new FileOutputStream(canbusPortList[currentPort - 1]);
 
-                mReadThread = new ReadThread();
+                mReadThread = new ReadThread("CanReadThread");
                 mReadThread.start();
             } else {
                 Toast.makeText(getContext(), "Can't open canbus", Toast.LENGTH_LONG).show();
@@ -391,7 +397,8 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
     public void clearData() {
         allReceivedData = "";
         receivedData.setText(allReceivedData);
-
+        Log.e("Counter",""+counter);
+        counter=0;
     }
 
     private void importClasses() {

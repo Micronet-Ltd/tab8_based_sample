@@ -15,14 +15,13 @@ import android.content.IntentFilter;
 import android.content.res.Configuration;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.TabLayout;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
+import com.google.android.material.tabs.TabLayout;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+import androidx.appcompat.app.AppCompatActivity;
 import android.util.Log;
 
 import android.view.KeyEvent;
@@ -34,9 +33,6 @@ import com.micronet.sampleapp.fragments.CanbusFragment;
 import com.micronet.sampleapp.fragments.InputsOutputsLedsFragment;
 import com.micronet.sampleapp.fragments.PortsFragment;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -171,9 +167,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public void onDestroy() {
+    protected void onStop() {
         unregisterReceiver(mReceiver);
-        super.onDestroy();
+        super.onStop();
     }
 
     @Override

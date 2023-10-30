@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.micronet.sampleapp">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!--android:sharedUserId="android.uid.system"-->
 
 
@@ -19,7 +18,8 @@
         android:theme="@style/AppTheme">
         <activity android:name=".activities.MainActivity"
             android:screenOrientation="landscape"
-            android:configChanges="uiMode">
+            android:configChanges="uiMode"
+            android:exported="true">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
