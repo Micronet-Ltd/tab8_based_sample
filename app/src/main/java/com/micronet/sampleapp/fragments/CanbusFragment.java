@@ -5,6 +5,11 @@
 
 package com.micronet.sampleapp.fragments;
 
+import android.annotation.SuppressLint;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -22,8 +27,14 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.micronet.canbus.CanbusFilter;
 import com.micronet.sampleapp.R;
 import com.micronet.sampleapp.activities.MainActivity;
+import com.micronet.sampleapp.canbus.VehicleBusCAN;
+import com.micronet.sampleapp.canbus.VehicleBusHW;
+import com.micronet.sampleapp.canbus.VehicleBusWrapper;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -61,7 +72,7 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
     String[] canbusPortList = {"/dev/ttyCAN0", "/dev/ttyCAN1"};
     String[] canbusBitrateList = {"10Kbit", "20Kbit", "33.33Kbit", "50Kbit", "100Kbit", "125Kbit", "250Kbit", "500Kbit", "800Kbit", "1Mbit"};
     int[] canbusBitrateListValues = {10000, 20000, 33330, 50000, 100000, 125000, 250000, 500000, 800000, 1000000};
-    int currentPort = 1;
+    int currentPort = 2;
     int currentBitrate = 250000;
     boolean termination = true;
     boolean listenerMode = false;
@@ -71,7 +82,6 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
     public static MainActivity mainActivity;
     String receivedDataValue = null;
     String allReceivedData = "";
-    protected ReadThread mReadThread;
     byte[] data;
     boolean swcEnabled = false;
 
@@ -88,6 +98,7 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
     OutputStream mOutputStream;
     InputStream mInputStream;
     private int counter=0;
+    VehicleBusWrapper vehicleBusWrapper;
 
     public CanbusFragment() {
         // Required empty public constructor
@@ -96,11 +107,11 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        importClasses();
     }
 
     @Override
     public void onPause() {
+        requireContext().unregisterReceiver(receiver);
         closeCanbus();
         super.onPause();
     }
@@ -117,12 +128,12 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
 
         canList = rootView.findViewById(R.id.canList);
         canList.setOnItemSelectedListener(this);
-        ArrayAdapter canAdapter = new ArrayAdapter(getActivity(), R.layout.spinner_item, canbusPortList);
+        ArrayAdapter canAdapter = new ArrayAdapter(requireContext(), R.layout.spinner_item, canbusPortList);
         canList.setAdapter(canAdapter);
 
         bitrateList = rootView.findViewById(R.id.bitrateList);
         bitrateList.setOnItemSelectedListener(this);
-        ArrayAdapter bitrateAdapter = new ArrayAdapter(getActivity(), R.layout.spinner_item, canbusBitrateList);
+        ArrayAdapter bitrateAdapter = new ArrayAdapter(requireContext(), R.layout.spinner_item, canbusBitrateList);
         bitrateList.setAdapter(bitrateAdapter);
 
         terminationGroup = rootView.findViewById(R.id.terminationGroup);
@@ -182,14 +193,14 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
     }
 
 
-    @Override
-    public void onDestroy() {
-        if (mReadThread != null) {
-            mReadThread.interrupt();
-        }
-        closeCanbus();
-        super.onDestroy();
-    }
+//    @Override
+//    public void onDestroy() {
+//        if (mReadThread != null) {
+//            mReadThread.interrupt();
+//        }
+//        closeCanbus();
+//        super.onDestroy();
+//    }
 
 
     @Override
@@ -225,9 +236,9 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
         if (parent.getId() == R.id.canList) {
             String portName = parent.getItemAtPosition(position).toString();
             if (portName.contains("CAN0")) {
-                currentPort = 1;
-            } else {
                 currentPort = 2;
+            } else {
+                currentPort = 3;
             }
         }
         if (parent.getId() == R.id.bitrateList) {
@@ -250,54 +261,20 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
         }
     }
 
-    private class ReadThread extends Thread {
-        public ReadThread(@NonNull String name) {
-            super(name);
-        }
-
+    BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
-        public void run() {
-            super.run();
-            while (!isInterrupted()) {
-                int size;
-                try {
-                    byte[] buffer = new byte[64];
-                    if (mInputStream == null) {
-                        return;
-                    }
-                    size = mInputStream.read(buffer);
-                    if (size > 0) {
-                        onDataReceived(buffer, size);
-                    } else if (size<0) return;
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    return;
-                }
-
+        public void onReceive(Context context, Intent intent) {
+            if ("com.micronet.sampleapp.canframe".equals(intent.getAction())){
+                counter++;
+                int id = intent.getIntExtra("ID", -1);
+                byte[] data = intent.getByteArrayExtra("DATA");
+                String type = intent.getBooleanExtra("IS_EXTENDED",false)?"E":"S";
+                receivedData.setText(type + String.format(":%1$08X:", id) + new String(data));
             }
         }
-    }
+    };
 
-    public void onDataReceived(final byte[] buffer, int size) {
-        try {
-            receivedDataValue = new String(buffer, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        counter++;
-//        allReceivedData = receivedDataValue.substring(0, size)+" "+counter;
-
-//        mainActivity.runOnUiThread(new Runnable() {
-//
-//            @Override
-//            public void run() {
-//                receivedData.setText(allReceivedData);
-//            }
-//        });
-
-    }
-
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     public int configAndOpenCan() {
         int ret = 0;
         String[] idsStr, maskStr, typeStr;
@@ -331,50 +308,30 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
                 tempType[i] = Integer.parseInt(typeStr[i]);
             }
         }
+//        CanbusFilter[] filter= new CanbusFilter[]{
+//          new CanbusFilter(0,0, CanbusFilter.EXTENDED),
+//          new CanbusFilter(0,0,CanbusFilter.STANDARD)
+//        };
+        VehicleBusWrapper.CANHardwareFilter[] filter = new VehicleBusHW.CANHardwareFilter[]{
+                new VehicleBusHW.CANHardwareFilter(0,0, VehicleBusHW.CANFrameType.EXTENDED),
+                new VehicleBusHW.CANHardwareFilter(0,0, VehicleBusHW.CANFrameType.STANDARD)
+        };
 
-        try {
-            Constructor<?> constructor = CanbusHardwareFilter.getConstructor(int[].class, int[].class, int[].class);
-            canHardwareFilterInstanse = constructor.newInstance(tempIds, tempMask, tempType);
-            Object filterArr = Array.newInstance(CanbusHardwareFilter, 1);
-            Array.set(filterArr, 0, canHardwareFilterInstanse);
-            if (can_fd == -1)
-                ret = (int) configureAndOpenCan.invoke(canServiceInstanse, listenerMode, currentBitrate, termination, filterArr, currentPort,
-                    null);
-            else
-                ret = can_fd;
-
-            if (ret != -1) {
-                can_fd = ret;
-                canOpened = true;
-                enableConfigView(false);
-                mInputStream = new FileInputStream(canbusPortList[currentPort - 1]);
-                mOutputStream = new FileOutputStream(canbusPortList[currentPort - 1]);
-
-                mReadThread = new ReadThread("CanReadThread");
-                mReadThread.start();
-            } else {
-                Toast.makeText(getContext(), "Can't open canbus", Toast.LENGTH_LONG).show();
-            }
-
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (java.lang.InstantiationException e) {
-            e.printStackTrace();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        VehicleBusCAN can = new VehicleBusCAN(requireContext(),false);
+        can.start(currentBitrate,listenerMode,filter,currentPort,null);
+        requireContext().registerReceiver(receiver, new IntentFilter("com.micronet.sampleapp.canframe"));
         return 0;
     }
 
     public void closeCanbus() {
         try {
-            if (mReadThread != null) {
-                mReadThread.interrupt();
+            if (vehicleBusWrapper!=null){
+                vehicleBusWrapper.stop("CAN");
+                vehicleBusWrapper=null;
             }
+//            if (mReadThread != null) {
+//                mReadThread.interrupt();
+//            }
             int ret = (int) closeCanMethod.invoke(canServiceInstanse, currentPort);
             if (ret != -1) {
                 canOpened = false;
@@ -401,36 +358,36 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
         counter=0;
     }
 
-    private void importClasses() {
-        try {
-            CanbusService = Class.forName("com.android.server.serial.CanbusService");
-            CanbusHardwareFilter = Class.forName("com.android.server.serial.CanbusHardwareFilter");
-            CanbusFlowControl = Class.forName("com.android.server.serial.CanbusFlowControl");
-            Constructor<?> constructor = CanbusService.getConstructor();
-            canServiceInstanse = constructor.newInstance();
-            filtersArray = Class.forName("[Lcom.android.server.serial.CanbusHardwareFilter;");
-            Class flowControlArray = Class.forName("[Lcom.android.server.serial.CanbusFlowControl;");
-
-            configureAndOpenCan = CanbusService
-                .getMethod("configureAndOpenCan", boolean.class, int.class, boolean.class, filtersArray, int.class,
-                    flowControlArray);
-            closeCanMethod = CanbusService.getMethod("closeCan", int.class);
-
-
-        } catch (IllegalArgumentException iAE) {
-            throw iAE;
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (java.lang.InstantiationException e) {
-            e.printStackTrace();
-        }
-    }
+//    private void importClasses() {
+//        try {
+//            CanbusService = Class.forName("com.android.server.serial.CanbusService");
+//            CanbusHardwareFilter = Class.forName("com.android.server.serial.CanbusHardwareFilter");
+//            CanbusFlowControl = Class.forName("com.android.server.serial.CanbusFlowControl");
+//            Constructor<?> constructor = CanbusService.getConstructor();
+//            canServiceInstanse = constructor.newInstance();
+//            filtersArray = Class.forName("[Lcom.android.server.serial.CanbusHardwareFilter;");
+//            Class flowControlArray = Class.forName("[Lcom.android.server.serial.CanbusFlowControl;");
+//
+//            configureAndOpenCan = CanbusService
+//                .getMethod("configureAndOpenCan", boolean.class, int.class, boolean.class, filtersArray, int.class,
+//                    flowControlArray);
+//            closeCanMethod = CanbusService.getMethod("closeCan", int.class);
+//
+//
+//        } catch (IllegalArgumentException iAE) {
+//            throw iAE;
+//        } catch (ClassNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (NoSuchMethodException e) {
+//            e.printStackTrace();
+//        } catch (IllegalAccessException e) {
+//            e.printStackTrace();
+//        } catch (InvocationTargetException e) {
+//            e.printStackTrace();
+//        } catch (java.lang.InstantiationException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public void enableConfigView(boolean enable) {
         MainActivity.setViewAndChildrenEnabled(rootView.findViewById(R.id.maskConfiguration), enable);
