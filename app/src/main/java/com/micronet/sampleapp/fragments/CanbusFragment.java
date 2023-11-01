@@ -11,8 +11,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.fragment.app.Fragment;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,24 +26,15 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.micronet.canbus.CanbusFilter;
+import com.micronet.canbus.CanbusFrameType;
 import com.micronet.sampleapp.R;
 import com.micronet.sampleapp.activities.MainActivity;
 import com.micronet.sampleapp.canbus.VehicleBusCAN;
 import com.micronet.sampleapp.canbus.VehicleBusHW;
 import com.micronet.sampleapp.canbus.VehicleBusWrapper;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 
 /**
  * Canbus Fragment Class
@@ -53,7 +42,6 @@ import java.lang.reflect.Method;
 public class CanbusFragment extends Fragment implements OnClickListener, AdapterView.OnItemSelectedListener {
 
     private final String TAG = "CanbusFragment";
-    public static final String dockAction = "android.intent.action.DOCK_EVENT";
     private View rootView;
     Spinner canList;
     Spinner bitrateList;
@@ -80,23 +68,9 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
     int dockState = -1;
     int can_fd = -1;
     public static MainActivity mainActivity;
-    String receivedDataValue = null;
     String allReceivedData = "";
     byte[] data;
     boolean swcEnabled = false;
-
-    Class CanbusService;
-    Class CanbusHardwareFilter;
-    Class CanbusFlowControl;
-    Class filtersArray;
-    Object canServiceInstanse;
-    Object canHardwareFilterInstanse;
-    Method configureAndOpenCan;
-    Method closeCanMethod;
-
-
-    OutputStream mOutputStream;
-    InputStream mInputStream;
     private int counter=0;
     VehicleBusWrapper vehicleBusWrapper;
 
@@ -111,7 +85,6 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
 
     @Override
     public void onPause() {
-        requireContext().unregisterReceiver(receiver);
         closeCanbus();
         super.onPause();
     }
@@ -193,16 +166,6 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
     }
 
 
-//    @Override
-//    public void onDestroy() {
-//        if (mReadThread != null) {
-//            mReadThread.interrupt();
-//        }
-//        closeCanbus();
-//        super.onDestroy();
-//    }
-
-
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -219,12 +182,8 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
                 if (TextUtils.isEmpty(dataToSend.getText().toString())) {
                     Toast.makeText(getContext(), "Enter data!", Toast.LENGTH_LONG).show();
                 } else {
-                    byte[] crByte = {0x0D};
                     data = dataToSend.getText().toString().getBytes();
-                    byte[] allData = new byte[data.length + 1];
-                    System.arraycopy(data, 0, allData, 0, data.length);
-                    System.arraycopy(crByte, 0, allData, data.length, 1);
-                    sendData(allData);
+                    sendData(data);
                 }
                 break;
 
@@ -252,19 +211,25 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
     }
 
     public void sendData(byte[] data) {
-        if (mOutputStream != null) {
-            try {
-                mOutputStream.write(data);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        //TODO Send intent to write frame
+        byte[] toSend;
+        if(data.length <= 8){
+            toSend=data;
+        } else {
+            toSend=new byte[8];
+            System.arraycopy(data,0,toSend,0,8);
         }
+        Intent intent = new Intent("com.micronet.sampleapp.canframe_send");
+        intent.putExtra("ID", 0x18FFFFFF);
+        intent.putExtra("DATA", toSend);
+        intent.putExtra("IS_EXTENDED", true);
+        requireContext().sendBroadcast(intent);
     }
 
     BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if ("com.micronet.sampleapp.canframe".equals(intent.getAction())){
+            if ("com.micronet.sampleapp.canframe_received".equals(intent.getAction())){
                 counter++;
                 int id = intent.getIntExtra("ID", -1);
                 byte[] data = intent.getByteArrayExtra("DATA");
@@ -308,10 +273,7 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
                 tempType[i] = Integer.parseInt(typeStr[i]);
             }
         }
-//        CanbusFilter[] filter= new CanbusFilter[]{
-//          new CanbusFilter(0,0, CanbusFilter.EXTENDED),
-//          new CanbusFilter(0,0,CanbusFilter.STANDARD)
-//        };
+
         VehicleBusWrapper.CANHardwareFilter[] filter = new VehicleBusHW.CANHardwareFilter[]{
                 new VehicleBusHW.CANHardwareFilter(0,0, VehicleBusHW.CANFrameType.EXTENDED),
                 new VehicleBusHW.CANHardwareFilter(0,0, VehicleBusHW.CANFrameType.STANDARD)
@@ -319,36 +281,21 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
 
         VehicleBusCAN can = new VehicleBusCAN(requireContext(),false);
         can.start(currentBitrate,listenerMode,filter,currentPort,null);
-        requireContext().registerReceiver(receiver, new IntentFilter("com.micronet.sampleapp.canframe"));
+        requireContext().registerReceiver(receiver, new IntentFilter("com.micronet.sampleapp.canframe_received"));
+        enableConfigView(false);
         return 0;
     }
 
     public void closeCanbus() {
-        try {
-            if (vehicleBusWrapper!=null){
-                vehicleBusWrapper.stop("CAN");
-                vehicleBusWrapper=null;
-            }
-//            if (mReadThread != null) {
-//                mReadThread.interrupt();
-//            }
-            int ret = (int) closeCanMethod.invoke(canServiceInstanse, currentPort);
-            if (ret != -1) {
-                canOpened = false;
-                enableConfigView(true);
-                if (swcEnabled) {
-                    bitrateList.setEnabled(false);
-                }
-                //closeCanMethod(currentPort);
-                can_fd = -1;
-            }
-            mInputStream = null;
-            mOutputStream = null;
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
+        if (vehicleBusWrapper!=null){
+            vehicleBusWrapper.stop("CAN");
+            vehicleBusWrapper=null;
+            try{
+                requireContext().unregisterReceiver(receiver);
+            } catch (IllegalArgumentException ignore){}
+            canOpened=false;
         }
+        enableConfigView(true);
     }
 
     public void clearData() {
@@ -357,37 +304,6 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
         Log.e("Counter",""+counter);
         counter=0;
     }
-
-//    private void importClasses() {
-//        try {
-//            CanbusService = Class.forName("com.android.server.serial.CanbusService");
-//            CanbusHardwareFilter = Class.forName("com.android.server.serial.CanbusHardwareFilter");
-//            CanbusFlowControl = Class.forName("com.android.server.serial.CanbusFlowControl");
-//            Constructor<?> constructor = CanbusService.getConstructor();
-//            canServiceInstanse = constructor.newInstance();
-//            filtersArray = Class.forName("[Lcom.android.server.serial.CanbusHardwareFilter;");
-//            Class flowControlArray = Class.forName("[Lcom.android.server.serial.CanbusFlowControl;");
-//
-//            configureAndOpenCan = CanbusService
-//                .getMethod("configureAndOpenCan", boolean.class, int.class, boolean.class, filtersArray, int.class,
-//                    flowControlArray);
-//            closeCanMethod = CanbusService.getMethod("closeCan", int.class);
-//
-//
-//        } catch (IllegalArgumentException iAE) {
-//            throw iAE;
-//        } catch (ClassNotFoundException e) {
-//            e.printStackTrace();
-//        } catch (NoSuchMethodException e) {
-//            e.printStackTrace();
-//        } catch (IllegalAccessException e) {
-//            e.printStackTrace();
-//        } catch (InvocationTargetException e) {
-//            e.printStackTrace();
-//        } catch (java.lang.InstantiationException e) {
-//            e.printStackTrace();
-//        }
-//    }
 
     public void enableConfigView(boolean enable) {
         MainActivity.setViewAndChildrenEnabled(rootView.findViewById(R.id.maskConfiguration), enable);

@@ -24,11 +24,9 @@ import java.util.Iterator;
  * Created by dschmidt on 2/18/16.
  */
 public class VehicleBusWrapper extends VehicleBusHW {
-    public static final String TAG = "ATS-VBS-Wrap";
+    public static final String TAG = "VehicleBusWrapper";
 
     static int canNumber;
-    static boolean isUnitTesting = false; // we don't actually open sockets when unit testing
-
 
     // Singleton methods: makes this class a singleton
     private static VehicleBusWrapper instance = null;
@@ -115,12 +113,6 @@ public class VehicleBusWrapper extends VehicleBusHW {
     //   name: either "J1708" or "CAN"
     //////////////////////////////////////////////////
     public boolean start(String name, Runnable readyCallback, Runnable terminatedCallback) {
-        if (isUnitTesting) {
-            // since we are unit testing and not on realy device, even creating the CanbusInterface will fail fatally,
-            //  so we need to skip this in testing
-            Log.e(TAG, "UnitTesting is on. Will not start bus.");
-            return false;
-        }
 
         // If we are already setup, then call ready right away
         if (busSetupRunnable == null) {
@@ -179,16 +171,6 @@ public class VehicleBusWrapper extends VehicleBusHW {
     //   name: either "J1708" or "CAN"
     //////////////////////////////////////////////////
     public void stop(String name) {
-
-
-        if (isUnitTesting) {
-            // since we are unit testing and not on realy device, even creating the CanbusInterface will fail fatally,
-            //  so we need to skip this in testing
-            Log.e(TAG, "UnitTesting is on. Will not stop bus.");
-            return;
-        }
-
-
         if (!instanceNames.contains(name)) {
             //Log.d(TAG, "" + name + " never started. Stop ignored -- must start first");
             return;
@@ -238,59 +220,6 @@ public class VehicleBusWrapper extends VehicleBusHW {
             busSetupRunnable.teardown();
     }
 
-    //////////////////////////////////////////////////
-    // restart()
-    //  restarts the buses
-    //  used for changing the speed or mode of CAN without having to start/stop J1708 twice (once to remove CAN and once to re-add CAN)
-    //      using this call, J1708 is only restarted once when CAN is changed.
-    //   name: "CAN"
-    //////////////////////////////////////////////////
-    public boolean restart(String replaceCallbacksName,
-                           Runnable newReadyCallback,
-                           Runnable newTerminatedCallback) {
-
-        if (isUnitTesting) {
-            // since we are unit testing and not on real device, even creating the CanbusInterface will fail fatally,
-            //  so we need to skip this in testing
-            Log.e(TAG, "UnitTesting is on. Will not restart bus.");
-            return false;
-        }
-
-        if (busSetupRunnable == null) {
-            Log.e(TAG, "busSetupRunnable is null!! Cannot restart.");
-            return false;
-        }
-
-        Log.d(TAG, "Restarting buses");
-
-        // If we are ready, then just call back, otherwise start the thread.
-
-        if (replaceCallbacksName != null) {
-            removeInstanceCallbacks(replaceCallbacksName);
-            addInstanceCallbacks(replaceCallbacksName, newReadyCallback, newTerminatedCallback);
-        }
-
-
-        // we must teardown and restart the interface
-
-        if (busSetupRunnable != null)
-            busSetupRunnable.teardown();
-
-        // Sleep to avoid filter dropping issue.
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        if (busSetupRunnable != null) {
-            busSetupRunnable.setup(); // this will also call callback array
-        }
-
-
-        return true;
-
-    } // restart()
 
     ///////////////////////////////////////////////////
     // getCANSocket()
@@ -301,18 +230,6 @@ public class VehicleBusWrapper extends VehicleBusHW {
         if (!busSetupRunnable.isSetup()) return null; // no valid socket
         return new CANSocket(busSetupRunnable.setupSocket, busSetupRunnable.canNumber);
     } // getCANSocket()
-
-
-    ///////////////////////////////////////////////////
-    // getCANBitrate()
-    //  return the bitrate for can that is being used (0 if no bitrate in use)
-    ///////////////////////////////////////////////////
-    public int getCANBitrate() {
-        if (busSetupRunnable == null) return 0; // no bitrate -- class doesnt even exit
-        if (!busSetupRunnable.isSetup()) return 0; // no bitrate -- socket wasn't even created yet
-
-        return busSetupRunnable.bitrate;
-    }
 
 
 

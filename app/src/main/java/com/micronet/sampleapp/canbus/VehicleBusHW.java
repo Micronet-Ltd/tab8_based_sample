@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 public class VehicleBusHW {
-    public static final String TAG = "ATS-VBS-HW";
+    public static final String TAG = "VehicleBusHW";
 
     private static final int CAN_PORT1 = 2; // value 2 = CAN1
     private static final int CAN_PORT2 = 3; // value 3 = CAN2
