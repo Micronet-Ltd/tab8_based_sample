@@ -26,7 +26,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.micronet.canbus.CanbusFrameType;
 import com.micronet.sampleapp.R;
 import com.micronet.sampleapp.activities.MainActivity;
 import com.micronet.sampleapp.canbus.VehicleBusCAN;
@@ -45,9 +44,7 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
     private View rootView;
     Spinner canList;
     Spinner bitrateList;
-    RadioGroup terminationGroup;
     RadioGroup listenerModeGroup;
-    RadioGroup swcGroup;
     Button openCan;
     Button closeCan;
     EditText ids;
@@ -61,18 +58,17 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
     String[] canbusBitrateList = {"10Kbit", "20Kbit", "33.33Kbit", "50Kbit", "100Kbit", "125Kbit", "250Kbit", "500Kbit", "800Kbit", "1Mbit"};
     int[] canbusBitrateListValues = {10000, 20000, 33330, 50000, 100000, 125000, 250000, 500000, 800000, 1000000};
     int currentPort = 2;
-    int currentBitrate = 250000;
+    int currentBitrate = 10000;
     boolean termination = true;
     boolean listenerMode = false;
     boolean canOpened = false;
     int dockState = -1;
-    int can_fd = -1;
-    public static MainActivity mainActivity;
     String allReceivedData = "";
     byte[] data;
     boolean swcEnabled = false;
     private int counter=0;
-    VehicleBusWrapper vehicleBusWrapper;
+    private VehicleBusCAN vehicleBusCAN;
+
 
     public CanbusFragment() {
         // Required empty public constructor
@@ -93,7 +89,6 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_canbus, container, false);
-        mainActivity = (MainActivity) getActivity();
 
         ids = rootView.findViewById(R.id.ids);
         masks = rootView.findViewById(R.id.masks);
@@ -109,44 +104,12 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
         ArrayAdapter bitrateAdapter = new ArrayAdapter(requireContext(), R.layout.spinner_item, canbusBitrateList);
         bitrateList.setAdapter(bitrateAdapter);
 
-        terminationGroup = rootView.findViewById(R.id.terminationGroup);
-        terminationGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if (checkedId == R.id.termOn) {
-                    termination = true;
-                } else {
-                    termination = false;
-                }
-            }
-        });
         listenerModeGroup = rootView.findViewById(R.id.listenerModeGroup);
         listenerModeGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
 
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if (checkedId == R.id.lisModeOff) {
-                    listenerMode = false;
-                } else {
-                    listenerMode = true;
-                }
-            }
-        });
-        swcGroup = rootView.findViewById(R.id.swcGroup);
-        swcGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if (checkedId == R.id.regular) {
-                    bitrateList.setEnabled(true);
-                    swcEnabled = false;
-                } else {
-                    currentBitrate = canbusBitrateListValues[2];
-                    bitrateList.setSelection(2);
-                    bitrateList.setEnabled(false);
-                    swcEnabled = true;
-                }
+                listenerMode = checkedId != R.id.lisModeOff;
             }
         });
 
@@ -240,8 +203,7 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
     };
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
-    public int configAndOpenCan() {
-        int ret = 0;
+    public void configAndOpenCan() {
         String[] idsStr, maskStr, typeStr;
         int[] tempIds, tempMask, tempType;
 
@@ -252,7 +214,7 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
             tempIds = new int[idsStr.length];
             for (int i = 0; i < idsStr.length; i++) {
 
-                tempIds[i] = Integer.parseInt(idsStr[i]);
+                tempIds[i] = Integer.parseInt(idsStr[i],16);
             }
         }
         if (TextUtils.isEmpty(masks.getText().toString())) {
@@ -261,7 +223,7 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
             maskStr = masks.getText().toString().split(",");
             tempMask = new int[maskStr.length];
             for (int i = 0; i < maskStr.length; i++) {
-                tempMask[i] = Integer.parseInt(maskStr[i]);
+                tempMask[i] = Integer.parseInt(maskStr[i],16);
             }
         }
         if (TextUtils.isEmpty(types.getText().toString())) {
@@ -274,22 +236,43 @@ public class CanbusFragment extends Fragment implements OnClickListener, Adapter
             }
         }
 
-        VehicleBusWrapper.CANHardwareFilter[] filter = new VehicleBusHW.CANHardwareFilter[]{
-                new VehicleBusHW.CANHardwareFilter(0,0, VehicleBusHW.CANFrameType.EXTENDED),
-                new VehicleBusHW.CANHardwareFilter(0,0, VehicleBusHW.CANFrameType.STANDARD)
-        };
+        if (tempType.length != tempIds.length){
+            Toast.makeText(requireContext(), "IDs/Filter Types not equal length", Toast.LENGTH_SHORT).show();
+            return;
+        } else if (tempType.length>24) {
+            Toast.makeText(requireContext(), "Too many IDs/Filter Types", Toast.LENGTH_SHORT).show();
+            return;
+        } else if (tempMask.length>16) {
+            Toast.makeText(requireContext(), "Too many Masks", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        VehicleBusCAN can = new VehicleBusCAN(requireContext(),false);
-        can.start(currentBitrate,listenerMode,filter,currentPort,null);
-        requireContext().registerReceiver(receiver, new IntentFilter("com.micronet.sampleapp.canframe_received"));
-        enableConfigView(false);
-        return 0;
+        int conditionsSize= tempType.length;
+        VehicleBusWrapper.CANHardwareFilter[] filters = new VehicleBusHW.CANHardwareFilter[conditionsSize];
+        if (conditionsSize<=16) {
+            for (int i = 0; i < conditionsSize; i++) {
+                filters[i] = new VehicleBusHW.CANHardwareFilter(tempIds[i], tempMask[i], tempType[i] == 0 ? VehicleBusHW.CANFrameType.STANDARD : VehicleBusHW.CANFrameType.EXTENDED);
+            }
+        } else {
+            for (int i = 0; i < 16; i++) {
+                filters[i] = new VehicleBusHW.CANHardwareFilter(tempIds[i], tempMask[i], tempType[i] == 0 ? VehicleBusHW.CANFrameType.STANDARD : VehicleBusHW.CANFrameType.EXTENDED);
+            }
+            for (int i = 16; i < conditionsSize; i++) {
+                filters[i] = new VehicleBusHW.CANHardwareFilter(tempIds[i], 0x1FFFFFFF, tempType[i] == 0 ? VehicleBusHW.CANFrameType.STANDARD : VehicleBusHW.CANFrameType.EXTENDED);
+            }
+        }
+
+        vehicleBusCAN = new VehicleBusCAN(requireContext());
+        if (vehicleBusCAN.start(currentBitrate,listenerMode,filters,currentPort,null)) {
+            requireContext().registerReceiver(receiver, new IntentFilter("com.micronet.sampleapp.canframe_received"));
+            enableConfigView(false);
+        }
     }
 
     public void closeCanbus() {
-        if (vehicleBusWrapper!=null){
-            vehicleBusWrapper.stop("CAN");
-            vehicleBusWrapper=null;
+        if (vehicleBusCAN!=null){
+            vehicleBusCAN.stop();
+            vehicleBusCAN=null;
             try{
                 requireContext().unregisterReceiver(receiver);
             } catch (IllegalArgumentException ignore){}

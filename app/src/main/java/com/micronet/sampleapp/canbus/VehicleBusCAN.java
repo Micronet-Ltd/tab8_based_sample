@@ -47,22 +47,11 @@ public class VehicleBusCAN {
     VehicleBusWrapper busWrapper;
 
     Context context;
-    int myAddress=0xFE;
-
-
-    int confirmedBusBitrate = 0; // set to a bitrate that we know is working so we can skip listen-only mode
-    int confirmedCanNumber = 0;
     private HandlerThread writeHandlerThread;
     private HandlerThread readHandlerThread;
 
 
     public VehicleBusCAN(Context context) {
-        busWrapper = VehicleBusWrapper.getInstance();
-        VehicleBusWrapper.canNumber = DEFAULT_CAN_NUMBER;
-        this.context = context;
-    }
-
-    public VehicleBusCAN(Context context, boolean isUnitTesting) {
         busWrapper = VehicleBusWrapper.getInstance();
         VehicleBusWrapper.canNumber = DEFAULT_CAN_NUMBER;
         this.context = context;
